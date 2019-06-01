@@ -1,10 +1,8 @@
-import React from "react";
-// import { BrowserRouter as Router, Route, Link } from "react-router-dom";
-import { render } from "react-dom";
-import { Router, Link } from "@reach/router";
+import React from 'react';
+import { Router, Link } from '@reach/router';
 
-import Home from "../components/home";
-import Login from "../components/login";
+import Home from '../components/home';
+import Login from '../components/login';
 
 const ReactRouter = () => (
   <div>

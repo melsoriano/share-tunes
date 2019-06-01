@@ -1,12 +1,12 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect } from 'react';
 
-function App() {
+function Login() {
   const [user, setUser] = useState();
 
   async function fetchMyAPI() {
-    await fetch("/api")
+    await fetch('/api')
       .then(res => {
-        // return res.json();
+        return res.json();
       })
       .then(body => {
         setUser(body);
@@ -32,4 +32,4 @@ function App() {
   );
 }
 
-export default App;
+export default Login;
