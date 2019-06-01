@@ -1,16 +1,16 @@
-const express = require('express');
-const session = require('express-session');
-const passport = require('passport');
-const bp = require('body-parser');
-const SpotifyStrategy = require('passport-spotify').Strategy;
+const express = require("express");
+const session = require("express-session");
+const passport = require("passport");
+const bp = require("body-parser");
+const SpotifyStrategy = require("passport-spotify").Strategy;
 const PORT = process.env.PORT || 8080;
 const app = express();
-require('dotenv').config();
+require("dotenv").config();
 
 app.use(bp.json({ extended: true }));
 app.use(
   bp.urlencoded({
-    extended: true,
+    extended: true
   })
 );
 
@@ -31,7 +31,7 @@ passport.use(
     {
       clientID: process.env.SPOTIFY_CLIENT_ID,
       clientSecret: process.env.SPOTIFY_CLIENT_SECRET,
-      callbackURL: 'http://localhost:8080/api/callback',
+      callbackURL: "http://localhost:8080/api/callback"
     },
     (accessToken, refreshToken, expires_in, profile, done) => {
       // asynchronous verification, for effect...
@@ -53,7 +53,7 @@ app.use(
     secret: process.env.SESSION_SECRET,
     resave: true,
     saveUninitialized: true,
-    name: 'spotify_session',
+    name: "spotify_session"
   })
 );
 // Initialize Passport! Also use passport.session() middleware, to support
@@ -61,15 +61,19 @@ app.use(
 app.use(passport.initialize());
 app.use(passport.session());
 
-app.get('/api', (req, res) => {
+app.get("/api", (req, res) => {
+  console.log("req.user: ", req.user);
+  res.json({
+    user: req.user
+  });
+});
+
+app.get("/api/account", ensureAuthenticated, (req, res) => {
+  // res.json({ hello: "poppit" });
   res.json({ user: req.user });
 });
 
-app.get('/api/account', ensureAuthenticated, (req, res) => {
-  res.json({ user: req.user });
-});
-
-app.get('/api/login', (req, res) => {
+app.get("/api/login", (req, res) => {
   res.json({ user: req.user });
 });
 
@@ -79,26 +83,28 @@ app.get('/api/login', (req, res) => {
 //   the user to spotify.com. After authorization, spotify will redirect the user
 //   back to this application at /auth/spotify
 app.get(
-  '/api/auth/spotify',
-  passport.authenticate('spotify', {
-    scope: ['user-read-email', 'user-read-private'],
-    showDialog: true,
+  "/api/auth/spotify",
+  passport.authenticate("spotify", {
+    scope: ["user-read-email", "user-read-private"],
+    showDialog: true
   })
 );
 
 // GET /api/callback
 //   Use passport.authenticate() as route middleware to authenticate the request. If authentication fails, the user will be redirected back to the login page. Otherwise, the primary route function function will be called, which, in this example, will redirect the user to the home page.
 app.get(
-  '/api/callback',
-  passport.authenticate('spotify', { failureRedirect: '/api/login' }),
+  "/api/callback",
+  passport.authenticate("spotify", { failureRedirect: "/api/login" }),
   (req, res) => {
-    res.redirect('/api');
+    // res.redirect("/api");
+    // needed to hardcode front end url...need to put in .env?
+    res.redirect("http://localhost:3000/home");
   }
 );
 
-app.get('/api/logout', (req, res) => {
+app.get("/api/logout", (req, res) => {
   req.logout();
-  res.redirect('/api');
+  res.redirect("/api");
 });
 
 // Route middleware to ensure user is authenticated. Use this route middleware on any resource that needs to be protected. If the request is authenticated (typically via a persistent login session), the request will proceed. Otherwise, the user will be redirected to the login page.
@@ -106,7 +112,7 @@ function ensureAuthenticated(req, res, next) {
   if (req.isAuthenticated()) {
     return next();
   }
-  res.redirect('/api/login');
+  res.redirect("/api/login");
 }
 
 app.listen(PORT, () => {
