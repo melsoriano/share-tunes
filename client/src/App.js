@@ -1,28 +1,10 @@
-import React, { useState, useEffect } from 'react';
-import './App.css';
+import React from "react";
+// import { BrowserRouter as Router, Route, Link } from "react-router-dom";
+
+import ReactRouter from "./router";
 
 function App() {
-  const [user, setUser] = useState();
-
-  async function fetchMyAPI() {
-    await fetch('/api')
-      .then(res => {
-        return res.json();
-      })
-      .then(body => {
-        setUser(body);
-      });
-  }
-
-  // useEffect(() => {
-  //   fetchMyAPI();
-  // }, []);
-
-  return (
-    <div className="App">
-      <a href="http://localhost:8080/api/auth/spotify">Login with Spotify</a>
-    </div>
-  );
+  return <ReactRouter />;
 }
 
 export default App;

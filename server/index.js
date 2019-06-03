@@ -3,6 +3,7 @@ const session = require('express-session');
 const passport = require('passport');
 const bp = require('body-parser');
 const SpotifyStrategy = require('passport-spotify').Strategy;
+
 const PORT = process.env.PORT || 8080;
 const app = express();
 require('dotenv').config();
@@ -10,7 +11,7 @@ require('dotenv').config();
 app.use(bp.json({ extended: true }));
 app.use(
   bp.urlencoded({
-    extended: true,
+    extended: true
   })
 );
 
@@ -31,7 +32,7 @@ passport.use(
     {
       clientID: process.env.SPOTIFY_CLIENT_ID,
       clientSecret: process.env.SPOTIFY_CLIENT_SECRET,
-      callbackURL: 'http://localhost:8080/api/callback',
+      callbackURL: 'http://localhost:8080/api/callback'
     },
     (accessToken, refreshToken, expires_in, profile, done) => {
       // asynchronous verification, for effect...
@@ -53,19 +54,23 @@ app.use(
     secret: process.env.SESSION_SECRET,
     resave: true,
     saveUninitialized: true,
-    name: 'spotify_session',
+    name: 'spotify_session'
   })
 );
-// Initialize Passport!  Also use passport.session() middleware, to support
+// Initialize Passport! Also use passport.session() middleware, to support
 // persistent login sessions (recommended).
 app.use(passport.initialize());
 app.use(passport.session());
 
 app.get('/api', (req, res) => {
-  res.json({ user: req.user });
+  console.log('req.user: ', req.user);
+  res.json({
+    user: req.user
+  });
 });
 
 app.get('/api/account', ensureAuthenticated, (req, res) => {
+  // res.json({ hello: "poppit" });
   res.json({ user: req.user });
 });
 
@@ -82,7 +87,7 @@ app.get(
   '/api/auth/spotify',
   passport.authenticate('spotify', {
     scope: ['user-read-email', 'user-read-private'],
-    showDialog: true,
+    showDialog: true
   })
 );
 
@@ -92,7 +97,9 @@ app.get(
   '/api/callback',
   passport.authenticate('spotify', { failureRedirect: '/api/login' }),
   (req, res) => {
-    res.redirect('/api');
+    // res.redirect("/api");
+    // needed to hardcode front end url...need to put in .env?
+    res.redirect('http://localhost:3000/home');
   }
 );
 
