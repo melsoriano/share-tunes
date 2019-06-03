@@ -14,9 +14,9 @@ function App() {
       });
   }
 
-  useEffect(() => {
-    fetchMyAPI();
-  }, []);
+  // useEffect(() => {
+  //   fetchMyAPI();
+  // }, []);
 
   return (
     <div className="App">

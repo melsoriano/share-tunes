@@ -1,0 +1,25 @@
+version: "3"
+services:
+  express-server:
+    build: ./server
+    expose:
+      - ${EXPRESS_CONTAINER_PORT}
+    ports:
+      - ${EXPRESS_CONTAINER_PORT}:${EXPRESS_CONTAINER_PORT}
+    volumes:
+      - ./server:/app/admin-server
+    command: npm run dev
+    env_file: .env
+
+  frontend:
+    build: ./client
+    expose:
+      - ${REACT_CONTAINER_PORT}
+    ports:
+      - ${REACT_CONTAINER_PORT}:${REACT_CONTAINER_PORT}
+    volumes:
+      - ./client:/app/admin-client
+    links:
+      - express-server
+    command: npm run start
+    env_file: .env
