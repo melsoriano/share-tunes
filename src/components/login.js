@@ -1,33 +1,31 @@
 import React, { useState, useEffect } from 'react';
 
 function Login() {
-  const [user, setUser] = useState();
+  const [user, setUser] = useState({ user: null });
 
-  async function fetchMyAPI() {
-    await fetch('/api')
+  useEffect(() => {
+    fetch('/api/home')
       .then(res => {
         return res.json();
       })
       .then(body => {
-        setUser(body);
+        if (body) {
+          return setUser(body);
+        }
+        return setUser(null);
       });
-  }
-
-  useEffect(() => {
-    fetchMyAPI();
   }, []);
 
   return (
-    <div className="App">
-      <body>
+    <div id="login">
+      {!user.data ? (
         <div>
-          <div id="login">
-            <h1>First, authenticate with spotify</h1>
-            <a href="http://localhost:8080/api/auth/spotify">Login</a>
-          </div>
-          <div id="loggedin" />
+          <h1>First, authenticate with spotify</h1>
+          <a href="http://localhost:8080/api/auth/spotify">Login</a>
         </div>
-      </body>
+      ) : (
+        <div>you are logged in :) </div>
+      )}
     </div>
   );
 }
