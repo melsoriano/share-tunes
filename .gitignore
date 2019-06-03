@@ -23,4 +23,7 @@ npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
 
+# configs
 .env
+/config/firebaseConfig.js
+/config/serviceAccount.json
