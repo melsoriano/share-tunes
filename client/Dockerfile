@@ -1,5 +1,5 @@
 # Built from Node latest Alpine
-FROM node:10.16.0-alpine
+FROM node:10.12.0
 
 # Set the app directory as the context for all commands and entry to the container
 WORKDIR /app/admin-client
