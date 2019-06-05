@@ -5,21 +5,14 @@ function Login() {
   const [user, setUser] = useState({ user: null });
 
   useEffect(() => {
-    fetch('http://localhost:8080/login', {
-      mode: 'cors',
-      credentials: 'include',
-      redirect: 'follow',
-      headers: new Headers({
-        'Access-Control-Allow-Origin': 'http://localhost:8080',
-      }),
-    })
+    fetch('http://localhost:8080/login')
       .then(res => {
+        console.log(res.headers);
         return res.json();
       })
       .then(body => {
-        const { firebaseToken, accessToken, uid, email } = body.data;
-
-        if (body.data) {
+        if (!body.errorMessage) {
+          const { firebaseToken, accessToken, uid, email } = body.data;
           // We sign in via a temporary Firebase app to update the profile.
           tempApp
             .auth()
@@ -35,7 +28,6 @@ function Login() {
                     accessToken,
                   }),
               ];
-
               // Wait for completion of above tasks.
               return Promise.all(tasks).then(() => {
                 Promise.all([
@@ -49,6 +41,10 @@ function Login() {
           return 'nope';
         }
       });
+
+    fbaseApp.auth().onAuthStateChanged(user => {
+      console.log(user);
+    });
   }, []);
 
   function onSignInButtonClick() {
