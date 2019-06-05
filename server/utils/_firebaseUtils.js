@@ -1,17 +1,17 @@
 const firebaseAdmin = require('firebase-admin');
 const firebase = require('firebase');
-const { serviceAccount, firebaseConfig } = require('../../config');
+const { serviceAccount, firebaseConfig } = require('../config');
 
 // firebase-admin to create tokens for custom auth providers
-firebaseAdmin.initializeApp({
+const fbaseAdmin = firebaseAdmin.initializeApp({
   credential: firebaseAdmin.credential.cert(serviceAccount),
 });
 
 // general firebase app, does not include admin privileges
-firebase.initializeApp(firebaseConfig);
+const fbaseApp = firebase.initializeApp(firebaseConfig);
 
 async function _databaseCreation(uid, email, accessToken) {
-  return firebaseAdmin
+  return fbaseAdmin
     .firestore()
     .doc(`users/${uid}`)
     .set({
@@ -21,7 +21,7 @@ async function _databaseCreation(uid, email, accessToken) {
 }
 
 async function _userCreation(uid, email, providerId) {
-  return firebaseAdmin
+  return fbaseAdmin
     .auth()
     .updateUser(uid, {
       email,
@@ -30,7 +30,7 @@ async function _userCreation(uid, email, providerId) {
     .catch(error => {
       // If user does not exists we create it.
       if (error.code === 'auth/user-not-found') {
-        return firebaseAdmin.auth().createUser({
+        return fbaseAdmin.auth().createUser({
           uid,
           email,
           providerId,
@@ -40,32 +40,33 @@ async function _userCreation(uid, email, providerId) {
     });
 }
 
+async function _createCustomClaims(uid) {
+  return fbaseAdmin.auth().setCustomUserClaims(uid, {
+    providerData: ['OAuthProvider'],
+    admin: true,
+  });
+}
+
 async function _createFirebaseAccount(spotifyID, email, accessToken) {
   // The UID we'll assign to the user.
   const uid = `spotify:${spotifyID}`;
 
   const databaseCreationTask = _databaseCreation(uid, email, accessToken);
   const userCreationTask = _userCreation(uid, email);
+  const customClaimsTask = _createCustomClaims(uid);
 
-  return Promise.all([databaseCreationTask, userCreationTask]).then(() => {
-    const token = firebaseAdmin.auth().createCustomToken(uid);
+  return Promise.all([
+    databaseCreationTask,
+    userCreationTask,
+    customClaimsTask,
+  ]).then(() => {
+    const token = fbaseAdmin.auth().createCustomToken(uid);
     return token;
   });
 }
 
-async function _signInWithCustomToken(firebaseToken, res) {
-  return firebase
-    .auth()
-    .signInWithCustomToken(firebaseToken)
-    .then(() => {
-      res.redirect(process.env.CLIENT_URL);
-    })
-    .catch(err => {
-      return err;
-    });
-}
-
 module.exports = {
   _createFirebaseAccount,
-  _signInWithCustomToken,
+  fbaseAdmin,
+  fbaseApp,
 };

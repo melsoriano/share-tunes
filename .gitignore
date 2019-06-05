@@ -2,8 +2,11 @@
 
 # dependencies
 /node_modules
+/client/node_modules
+/server/node_modules
 /.pnp
 .pnp.js
+.vscode
 
 # testing
 /coverage
@@ -25,5 +28,5 @@ yarn-error.log*
 
 # configs
 .env
-/config/firebaseConfig.js
-/config/serviceAccount.json
+/server/config/firebaseConfig.js
+/server/config/serviceAccount.json
