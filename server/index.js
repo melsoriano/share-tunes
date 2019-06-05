@@ -1,120 +1,122 @@
+require('dotenv').config({ path: '../.env' });
 const express = require('express');
-const session = require('express-session');
-const passport = require('passport');
+const cookieParser = require('cookie-parser');
+const cookieSession = require('cookie-session');
+const crypto = require('crypto');
 const bp = require('body-parser');
-const SpotifyStrategy = require('passport-spotify').Strategy;
+const SpotifyWebApi = require('spotify-web-api-node');
+const cors = require('cors');
+// const utils = require('./utils/_firebaseUtils');
+const { CORS_WHITELIST, SPOTIFY_OAUTH_SCOPES } = require('./config');
 
 const PORT = process.env.PORT || 8080;
 const app = express();
-require('dotenv').config();
 
-app.use(bp.json({ extended: true }));
+const corsOptions = {
+  origin: function(origin, callback) {
+    if (CORS_WHITELIST.indexOf(origin) !== -1) {
+      return callback(null, true);
+    } else {
+      return callback(new Error('Not allowed by CORS'));
+    }
+  },
+  credentials: true,
+};
+
+app.use(cors(corsOptions));
+
+app.use(bp.json());
 app.use(
   bp.urlencoded({
-    extended: true
+    extended: true,
   })
-);
-
-// Passport session setup.
-//   To support persistent login sessions, Passport needs to be able to serialize users into and deserialize users out of the session. Typically, this will be as simple as storing the user ID when serializing, and finding the user by ID when deserializing. However, since this example does not have a database of user records, the complete spotify profile is serialized and deserialized.
-passport.serializeUser((user, done) => {
-  done(null, user);
-});
-
-passport.deserializeUser((obj, done) => {
-  done(null, obj);
-});
-
-// Use the SpotifyStrategy within Passport.
-//   Strategies in Passport require a function which accept credentials (in this case, an accessToken, refreshToken, expires_in and spotify profile) and invoke a callback with a user object.
-passport.use(
-  new SpotifyStrategy(
-    {
-      clientID: process.env.SPOTIFY_CLIENT_ID,
-      clientSecret: process.env.SPOTIFY_CLIENT_SECRET,
-      callbackURL: 'http://localhost:8080/api/callback'
-    },
-    (accessToken, refreshToken, expires_in, profile, done) => {
-      // asynchronous verification, for effect...
-      process.nextTick(() => {
-        // To keep the example simple, the user's spotify profile is returned to
-        // represent the logged-in user. In a typical application, you would want
-        // to associate the spotify account with a user record in the database,
-        // and return that user instead.
-
-        // TODO: Add database to store user information
-        return done(null, profile);
-      });
-    }
-  )
 );
 
 app.use(
-  session({
-    secret: process.env.SESSION_SECRET,
-    resave: true,
-    saveUninitialized: true,
-    name: 'spotify_session'
+  cookieSession({
+    name: 'fbase_session',
+    secret: 'super',
+    httpOnly: true,
+    signed: true,
+    maxAge: 7776000, // 90 days
   })
 );
-// Initialize Passport! Also use passport.session() middleware, to support
-// persistent login sessions (recommended).
-app.use(passport.initialize());
-app.use(passport.session());
 
-app.get('/api', (req, res) => {
-  console.log('req.user: ', req.user);
-  res.json({
-    user: req.user
+const Spotify = new SpotifyWebApi({
+  clientId: process.env.SPOTIFY_CLIENT_ID,
+  clientSecret: process.env.SPOTIFY_CLIENT_SECRET,
+  redirectUri: process.env.SPOTIFY_REDIRECT_URI,
+});
+
+app.get('/redirect', (req, res) => {
+  cookieParser()(req, res, () => {
+    const state = req.cookies.state || crypto.randomBytes(20).toString('hex');
+
+    res.cookie('state', state.toString(), {
+      maxAge: 7776000,
+      httpOnly: true,
+    });
+
+    const authorizeURL = Spotify.createAuthorizeURL(
+      CONFIG.SPOTIFY_OAUTH_SCOPES,
+      state
+    );
+    res.redirect(authorizeURL);
   });
 });
 
-app.get('/api/account', ensureAuthenticated, (req, res) => {
-  // res.json({ hello: "poppit" });
-  res.json({ user: req.user });
-});
+app.get('/token', (req, res) => {
+  try {
+    cookieParser()(req, res, () => {
+      if (!req.cookies.state) {
+        res
+          .status(400)
+          .send(
+            'State cookie not set or expired. Maybe you took too long to authorize. Please try again.'
+          );
+      } else if (req.cookies.state !== req.query.state) {
+        res.status(400).send('State validation failed');
+      }
+      Spotify.authorizationCodeGrant(req.query.code, (error, data) => {
+        if (error) {
+          return error;
+        }
+        Spotify.setAccessToken(data.body.access_token);
 
-app.get('/api/login', (req, res) => {
-  res.json({ user: req.user });
-});
+        Spotify.getMe(async (error, userResults) => {
+          if (error) {
+            return error;
+          }
+          const accessToken = data.body.access_token;
+          const spotifyUserID = userResults.body.id;
+          const uid = `spotify:${spotifyUserID}`;
+          const email = userResults.body.email;
 
-// GET /api/auth/spotify
-//   Use passport.authenticate() as route middleware to authenticate the
-//   request. The first step in spotify authentication will involve redirecting
-//   the user to spotify.com. After authorization, spotify will redirect the user
-//   back to this application at /auth/spotify
-app.get(
-  '/api/auth/spotify',
-  passport.authenticate('spotify', {
-    scope: ['user-read-email', 'user-read-private'],
-    showDialog: true
-  })
-);
+          const firebaseToken = await utils._createFirebaseAccount(
+            spotifyUserID,
+            email,
+            accessToken
+          );
 
-// GET /api/callback
-//   Use passport.authenticate() as route middleware to authenticate the request. If authentication fails, the user will be redirected back to the login page. Otherwise, the primary route function function will be called, which, in this example, will redirect the user to the home page.
-app.get(
-  '/api/callback',
-  passport.authenticate('spotify', { failureRedirect: '/api/login' }),
-  (req, res) => {
-    // res.redirect("/api");
-    // needed to hardcode front end url...need to put in .env?
-    res.redirect('http://localhost:3000/home');
+          req.session.cookie = { firebaseToken, accessToken, uid, email };
+
+          res.redirect('/login');
+        });
+      });
+    });
+  } catch (error) {
+    return res.json({ error: error.toString });
   }
-);
-
-app.get('/api/logout', (req, res) => {
-  req.logout();
-  res.redirect('/api');
+  return null;
 });
 
-// Route middleware to ensure user is authenticated. Use this route middleware on any resource that needs to be protected. If the request is authenticated (typically via a persistent login session), the request will proceed. Otherwise, the user will be redirected to the login page.
-function ensureAuthenticated(req, res, next) {
-  if (req.isAuthenticated()) {
-    return next();
+app.get('/login', (req, res) => {
+  if (!req.session.cookie) {
+    res.redirect('/token');
+  } else {
+    res.json({ data: req.session.cookie });
   }
-  res.redirect('/api/login');
-}
+});
 
 app.listen(PORT, () => {
   console.log(`Magic happening on ${PORT}`);
