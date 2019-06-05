@@ -6,7 +6,7 @@ const crypto = require('crypto');
 const bp = require('body-parser');
 const SpotifyWebApi = require('spotify-web-api-node');
 const cors = require('cors');
-const utils = require('./utils/_firebaseUtils');
+// const utils = require('./utils/_firebaseUtils');
 const { CORS_WHITELIST, SPOTIFY_OAUTH_SCOPES } = require('./config');
 
 const PORT = process.env.PORT || 8080;
