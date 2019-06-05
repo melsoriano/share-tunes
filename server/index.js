@@ -14,7 +14,7 @@ const app = express();
 
 const corsOptions = {
   origin: function(origin, callback) {
-    if (CORS_WHITELIST.indexOf(origin) !== -1) {
+    if (CORS_WHITELIST.indexOf(origin) !== -1 || !origin) {
       return callback(null, true);
     } else {
       return callback(new Error('Not allowed by CORS'));
@@ -35,7 +35,7 @@ app.use(
 app.use(
   cookieSession({
     name: 'fbase_session',
-    secret: 'super',
+    secret: process.env.SESSION_SECRET,
     httpOnly: true,
     signed: true,
     maxAge: 7776000, // 90 days
@@ -58,7 +58,7 @@ app.get('/redirect', (req, res) => {
     });
 
     const authorizeURL = Spotify.createAuthorizeURL(
-      CONFIG.SPOTIFY_OAUTH_SCOPES,
+      SPOTIFY_OAUTH_SCOPES,
       state
     );
     res.redirect(authorizeURL);
@@ -99,7 +99,7 @@ app.get('/token', (req, res) => {
           );
 
           req.session.cookie = { firebaseToken, accessToken, uid, email };
-
+          // res.setHeader('X-Auth-Token', firebaseToken);
           res.redirect('/login');
         });
       });
@@ -111,8 +111,10 @@ app.get('/token', (req, res) => {
 });
 
 app.get('/login', (req, res) => {
+  // console.log(req.sessionCookies);
+  // res.setHeader('Authorization: Bearer', req.header);
   if (!req.session.cookie) {
-    res.redirect('/token');
+    res.json({ errorMessage: 'unable to login, please try again' });
   } else {
     res.json({ data: req.session.cookie });
   }
