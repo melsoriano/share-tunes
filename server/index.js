@@ -1,4 +1,6 @@
-require('dotenv').config({ path: '../.env' });
+require('dotenv').config({
+  path: '/Users/mel-dl/Desktop/coding/share-tunes/.env',
+});
 const express = require('express');
 const cookieParser = require('cookie-parser');
 const cookieSession = require('cookie-session');
@@ -6,7 +8,7 @@ const crypto = require('crypto');
 const bp = require('body-parser');
 const SpotifyWebApi = require('spotify-web-api-node');
 const cors = require('cors');
-// const utils = require('./utils/_firebaseUtils');
+const utils = require('./utils/_firebaseUtils');
 const { CORS_WHITELIST, SPOTIFY_OAUTH_SCOPES } = require('./config');
 
 const PORT = process.env.PORT || 8080;
@@ -14,13 +16,14 @@ const app = express();
 
 const corsOptions = {
   origin: function(origin, callback) {
-    if (CORS_WHITELIST.indexOf(origin) !== -1) {
+    if (CORS_WHITELIST.indexOf(origin) !== -1 || !origin) {
       return callback(null, true);
     } else {
       return callback(new Error('Not allowed by CORS'));
     }
   },
   credentials: true,
+  exposedHeaders: ['Authorization'],
 };
 
 app.use(cors(corsOptions));
@@ -35,9 +38,9 @@ app.use(
 app.use(
   cookieSession({
     name: 'fbase_session',
-    secret: 'super',
     httpOnly: true,
     signed: true,
+    keys: [`${process.env.SESSION_SECRET}`],
     maxAge: 7776000, // 90 days
   })
 );
@@ -58,7 +61,7 @@ app.get('/redirect', (req, res) => {
     });
 
     const authorizeURL = Spotify.createAuthorizeURL(
-      CONFIG.SPOTIFY_OAUTH_SCOPES,
+      SPOTIFY_OAUTH_SCOPES,
       state
     );
     res.redirect(authorizeURL);
@@ -99,7 +102,6 @@ app.get('/token', (req, res) => {
           );
 
           req.session.cookie = { firebaseToken, accessToken, uid, email };
-
           res.redirect('/login');
         });
       });
@@ -111,8 +113,9 @@ app.get('/token', (req, res) => {
 });
 
 app.get('/login', (req, res) => {
+  res.set('Authorization', req.session.cookie);
   if (!req.session.cookie) {
-    res.redirect('/token');
+    res.json({ errorMessage: 'unable to login, please try again' });
   } else {
     res.json({ data: req.session.cookie });
   }
