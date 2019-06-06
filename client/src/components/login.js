@@ -5,12 +5,19 @@ function Login() {
   const [user, setUser] = useState({ user: null });
 
   useEffect(() => {
-    fetch('http://localhost:8080/login')
+    fetch('http://localhost:8080/login', {
+      mode: 'cors',
+      credentials: 'include',
+      redirect: 'follow',
+      headers: {
+        Accept: 'Authorization',
+      },
+    })
       .then(res => {
-        console.log(res.headers);
         return res.json();
       })
       .then(body => {
+        console.log(body);
         if (!body.errorMessage) {
           const { firebaseToken, accessToken, uid, email } = body.data;
           // We sign in via a temporary Firebase app to update the profile.
@@ -33,6 +40,7 @@ function Login() {
                 Promise.all([
                   fbaseApp.auth().signInWithCustomToken(firebaseToken),
                 ]).then(function() {
+                  console.log('body>>>', body);
                   setUser(body);
                 });
               });
@@ -41,10 +49,6 @@ function Login() {
           return 'nope';
         }
       });
-
-    fbaseApp.auth().onAuthStateChanged(user => {
-      console.log(user);
-    });
   }, []);
 
   function onSignInButtonClick() {
@@ -55,7 +59,6 @@ function Login() {
       'height=315,width=400'
     );
   }
-  console.log(process.env);
 
   return (
     <div id="login">

@@ -1,4 +1,6 @@
-require('dotenv').config();
+require('dotenv').config({
+  path: '/Users/mel-dl/Desktop/coding/share-tunes/.env',
+});
 const express = require('express');
 const cookieParser = require('cookie-parser');
 const cookieSession = require('cookie-session');
@@ -21,6 +23,7 @@ const corsOptions = {
     }
   },
   credentials: true,
+  exposedHeaders: ['Authorization'],
 };
 
 app.use(cors(corsOptions));
@@ -35,9 +38,9 @@ app.use(
 app.use(
   cookieSession({
     name: 'fbase_session',
-    secret: process.env.SESSION_SECRET,
     httpOnly: true,
     signed: true,
+    keys: [`${process.env.SESSION_SECRET}`],
     maxAge: 7776000, // 90 days
   })
 );
@@ -99,7 +102,6 @@ app.get('/token', (req, res) => {
           );
 
           req.session.cookie = { firebaseToken, accessToken, uid, email };
-          // res.setHeader('X-Auth-Token', firebaseToken);
           res.redirect('/login');
         });
       });
@@ -111,8 +113,7 @@ app.get('/token', (req, res) => {
 });
 
 app.get('/login', (req, res) => {
-  // console.log(req.sessionCookies);
-  // res.setHeader('Authorization: Bearer', req.header);
+  res.set('Authorization', req.session.cookie);
   if (!req.session.cookie) {
     res.json({ errorMessage: 'unable to login, please try again' });
   } else {
