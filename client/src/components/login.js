@@ -1,7 +1,13 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useContext } from 'react';
 import { fbaseApp, tempApp } from '../firebase/config';
 
+// import contexts
+import { FirebaseContext } from '../context/firebaseContext';
+import { SpotifyContext } from '../context/spotifyContext';
+
 function Login() {
+  const { firebaseToken, setFirebaseToken } = useContext(FirebaseContext);
+  const { spotifyToken, setSpotifyToken } = useContext(SpotifyContext);
   const [user, setUser] = useState({ user: null });
 
   useEffect(() => {
@@ -17,7 +23,11 @@ function Login() {
         return res.json();
       })
       .then(body => {
-        console.log(body);
+        console.log(body.data.firebaseToken);
+        let fToken = body.data.firebaseToken || 'no firebase token available';
+        setFirebaseToken(fToken);
+        let sToken = body.data.uid || 'no spotify token available';
+        setSpotifyToken(sToken);
         if (!body.errorMessage) {
           const { firebaseToken, accessToken, uid, email } = body.data;
           // We sign in via a temporary Firebase app to update the profile.
@@ -49,7 +59,7 @@ function Login() {
           return 'nope';
         }
       });
-  }, []);
+  }, [setFirebaseToken, setSpotifyToken]);
 
   function onSignInButtonClick() {
     // Open the Auth flow in a popup.
@@ -72,6 +82,8 @@ function Login() {
       ) : (
         <div>
           <h2>you are logged in :)</h2>
+          <p>Your firebase token is: {firebaseToken}</p>
+          <p>Your spotify token is: {spotifyToken}</p>
         </div>
       )}
     </div>
