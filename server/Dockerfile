@@ -25,5 +25,7 @@ RUN apk add bash
 # Install vim
 RUN apk add vim
 
+EXPOSE 8080
+
 # Start the node application as you normally would
 CMD ["npm", "run" "dev"]
