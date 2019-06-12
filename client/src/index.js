@@ -7,14 +7,17 @@ import * as serviceWorker from './serviceWorker';
 import { ThemeProvider } from './context/themeContext';
 import { SpotifyProvider } from './context/spotifyContext';
 import { FirebaseProvider } from './context/firebaseContext';
+import { UserProvider } from './context/userContext';
 
 ReactDOM.render(
   <ThemeProvider>
-    <SpotifyProvider>
-      <FirebaseProvider>
-        <App />
-      </FirebaseProvider>
-    </SpotifyProvider>
+    <UserProvider>
+      <SpotifyProvider>
+        <FirebaseProvider>
+          <App />
+        </FirebaseProvider>
+      </SpotifyProvider>
+    </UserProvider>
   </ThemeProvider>,
   document.getElementById('root')
 );

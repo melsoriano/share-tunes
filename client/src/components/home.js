@@ -1,27 +1,31 @@
 import React, { useState, useContext, useEffect } from 'react';
 import styled from 'styled-components';
 import createPlaylist from '../api/spotify/spotifyApi';
-import { SpotifyContext } from '../context/spotifyContext';
-
 import { SpotifyApi } from '../api/spotify/spotifyConfig';
 
 // styled components allow us to grab styles from the themeProvider object globally via props!
 export const Greeting = styled.div`
   color: ${props => props.theme.colors.fontColor};
 `;
-function Home(props) {
+function Home() {
   const [playlist, setPlaylistName] = useState({
     playlistName: '',
   });
-  const { spotifyToken } = useContext(SpotifyContext);
+  // check for user in localStorage:
+  const localUser = JSON.parse(localStorage.getItem('user'));
+  const [user] = useState(() => {
+    if (!localUser) {
+      return 'no user in localStorage';
+    }
+    return localUser;
+  });
+
+  // check for spotifyToken in localStorage (needs to be refactored in more secure way)
+  const spotifyToken = localStorage.getItem('SpotifyAccessToken');
 
   useEffect(() => {
-    return spotifyToken
-      ? SpotifyApi.setAccessToken(
-          spotifyToken.providerData[0].spotify.access_token
-        )
-      : null;
-  }, [spotifyToken]);
+    return spotifyToken ? SpotifyApi.setAccessToken(spotifyToken) : null;
+  }, [spotifyToken, user]);
 
   const handlePlaylistName = e => {
     console.log(e.target.value);
@@ -37,7 +41,7 @@ function Home(props) {
       />
       <button
         type="submit"
-        onClick={() => createPlaylist(spotifyToken.uid, playlist.playlistName)}
+        onClick={() => createPlaylist(user.uid, playlist.playlistName)}
       >
         ADD PLAYLIST
       </button>

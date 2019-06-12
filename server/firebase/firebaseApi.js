@@ -2,6 +2,7 @@ const { FirebaseAdmin, FirebaseApp } = require('../config');
 
 // Stores the Spotify access token each time a new one is created
 function databaseCreation(uid, email, accessToken, refreshToken) {
+  console.log('FirebaseAdmin: ', FirebaseAdmin);
   return FirebaseAdmin.firestore()
     .doc(`users/${uid}`)
     .set({
