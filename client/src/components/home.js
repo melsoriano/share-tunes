@@ -4,7 +4,7 @@ import {
   createSpotifyPlaylist,
   searchTracks,
   addTrackToPlaylist,
-  // getPlaylistTracks,
+  getPlaylistTracks,
 } from '../api/spotify/spotifyApi';
 import { SpotifyContext } from '../context/spotifyContext';
 
@@ -17,12 +17,19 @@ function Home() {
 
   const { searchQuery, setSearchQuery } = useContext(SpotifyContext);
   const { trackResults, setTrackResults } = useContext(SpotifyContext);
+  const { playlistQuery, setPlaylistQuery } = useContext(SpotifyContext);
+  const { playlistResult, setPlaylistResult } = useContext(SpotifyContext);
 
   const user = JSON.parse(localStorage.getItem('user'));
   SpotifyApi.setAccessToken(user.accessToken);
 
   const handlePlaylistName = e => {
     setPlaylistName({ playlistName: e.target.value });
+  };
+
+  // Get playlist
+  const handlePlaylistQuery = e => {
+    setPlaylistQuery({ playlistQuery: e.target.value });
   };
 
   const search = e => {
@@ -65,6 +72,24 @@ function Home() {
         >
           SEARCH
         </button>
+        <br />
+        <br />
+
+        {/** RETRIEVE A PLAYLIST */}
+        <input
+          type="text"
+          value={playlistQuery.query}
+          onChange={handlePlaylistQuery}
+          placeholder="Search Playlist"
+        />
+        <button
+          type="submit"
+          onClick={() =>
+            getPlaylistTracks(playlistQuery.query, setPlaylistResult)
+          }
+        >
+          GET PLAYLIST
+        </button>
       </div>
 
       {/** SEARCH RESULTS */}
@@ -86,6 +111,20 @@ function Home() {
         ))
       ) : (
         <h2>Start adding some tunes!</h2>
+      )}
+      {/** PLAYLSIT RESULTS */}
+      {playlistResult.data !== '' ? (
+        playlistResult.map((result, i) => (
+          <ul key={i}>
+            <li>
+              {/* {console.log(result)} */}
+              <div>{result.track.name}</div>
+              <img src={result.track.album.images[2].url} alt="album-cover" />
+            </li>
+          </ul>
+        ))
+      ) : (
+        <h2>View the Playlist!</h2>
       )}
     </div>
   );

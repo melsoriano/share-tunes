@@ -10,10 +10,16 @@ export const SpotifyProvider = ({ children }) => {
   const [trackResults, setTrackResults] = useState({
     data: '',
   });
+  const [playlistQuery, setPlaylistQuery] = useState({ query: '' });
+  const [playlistResult, setPlaylistResult] = useState({ data: '' });
   return (
     // inject state into the provider, and pass along to children components
     <SpotifyContext.Provider
       value={{
+        playlistQuery,
+        setPlaylistQuery,
+        playlistResult,
+        setPlaylistResult,
         spotifyToken,
         setSpotifyToken,
         searchQuery,

@@ -45,13 +45,13 @@ function addTrackToPlaylist(trackUri) {
   });
 }
 
-function getPlaylistTracks(next) {
+function getPlaylistTracks(query, setPlaylistResult) {
   getPlaylistFromDb(doc => {
     const playlistId = doc.id.toString();
 
     SpotifyApi.getPlaylistTracks(playlistId)
       .then(data => {
-        next(data.body);
+        setPlaylistResult(data.body.items);
       })
       .catch(error => console.log(error));
   });
