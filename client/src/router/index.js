@@ -8,7 +8,7 @@ import Login from '../components/login';
 import { ThemeContext } from '../context/themeContext';
 
 const ReactRouter = () => {
-  let { mode } = useContext(ThemeContext);
+  const { mode } = useContext(ThemeContext);
 
   // ThemeProvider gets mode from the context wrapper and passes it down to the rest of the application through the outer router component. Since this can't be done in around the root <App /> component, the router component will serve as it's 'proxy'
   return (

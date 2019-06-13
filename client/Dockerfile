@@ -1,7 +1,6 @@
 # Built from Node latest Alpine
 FROM node:alpine
 
-
 # Set the app directory as the context for all commands and entry to the container
 WORKDIR /app/admin-client
 
@@ -22,6 +21,8 @@ RUN apk add bash
 
 # Install vim
 RUN apk add vim
+
+EXPOSE 3000
 
 # Start the node application as you normally would
 CMD ["npm", "start"]

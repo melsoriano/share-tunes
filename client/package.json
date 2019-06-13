@@ -4,13 +4,14 @@
   "private": true,
   "dependencies": {
     "@reach/router": "^1.2.1",
+    "axios": "^0.19.0",
     "firebase": "^6.1.0",
-    "js-cookie": "^2.2.0",
     "react": "^16.8.6",
-    "react-cookie": "^4.0.0",
+    "react-async": "^6.2.0",
     "react-dom": "^16.8.6",
     "react-scripts": "3.0.1",
     "react-switch": "^5.0.0",
+    "spotify-web-api-node": "^4.0.0",
     "styled-components": "^4.3.1"
   },
   "scripts": {
@@ -21,10 +22,11 @@
   },
   "husky": {
     "hooks": {
-      "precommit": "lint-staged"
+      "precommit": "cross-env lint-staged GIT_DIR=../../../.git git update-index --again"
     }
   },
   "lint-staged": {
+    "gitDir": "cross-env lint-staged GIT_DIR=../../../.git git update-index --again",
     "*.{js,jsx}": [
       "pretty-quick --staged",
       "eslint src/ --fix",
@@ -54,10 +56,11 @@
     "eslint-plugin-jsx-a11y": "^6.2.1",
     "eslint-plugin-prettier": "^3.1.0",
     "eslint-plugin-react": "^7.13.0",
+    "eslint-plugin-react-hooks": "^1.6.0",
     "husky": "^2.3.0",
     "lint-staged": "^8.1.7",
     "prettier": "^1.17.1",
     "pretty-quick": "^1.11.0"
   },
-  "proxy": "http://localhost:8080"
+  "proxy": "http://express-server:8080"
 }
