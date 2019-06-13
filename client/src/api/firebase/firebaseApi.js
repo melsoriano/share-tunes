@@ -1,22 +1,41 @@
-import { FirebaseAuth, db } from './firebaseConfig';
+import * as firebase from 'firebase';
+import { db } from './firebaseConfig';
 
-/**
- * Creates a new playlist and renders the results
- * @param {String} playlistId ID of the playlist
- * @param {String} ownerId ID of the playlist owner
- * @param {String} playlistName The name of the playlist
- * @return {Object} An object containing playlist data
- */
 function addNewPlaylistToDb(ownerId, playlistId, playlistName) {
-  console.log('adding to firebase.....');
-
   db.doc(`playlists/${playlistId}`).set(
     {
       ownerId,
       playlistName,
+      tracks: [{ trackUri: '', timestamp: null }],
     },
     { merge: true }
   );
 }
 
-export default addNewPlaylistToDb;
+function getPlaylistFromDb(next) {
+  db.collection('playlists')
+    .get()
+    .then(querySnapshot => {
+      querySnapshot.forEach(doc => {
+        // callback function that sends the document data to the next function
+        next(doc);
+      });
+    })
+    .catch(error => {
+      return error;
+    });
+}
+
+function addTrackToDb(trackUri, playlistId) {
+  db.doc(`playlists/${playlistId}`)
+    .update({
+      tracks: firebase.firestore.FieldValue.arrayUnion({
+        trackUri,
+      }),
+    })
+    .catch(error => {
+      return error;
+    });
+}
+
+export { addNewPlaylistToDb, getPlaylistFromDb, addTrackToDb };
