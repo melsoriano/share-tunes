@@ -7,14 +7,15 @@ import { getCookie, getUrlParameter } from '../utils/helpers';
 // TODO:
 // After login, figure out a way to pass the SpotifyAccessToken without putting it in localStorage. handle in userContext?
 
+// import contexts
+import { FirebaseContext } from '../context/firebaseContext';
+import { SpotifyContext } from '../context/spotifyContext';
+
 function Login() {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const spotifyAuthCode = getUrlParameter('code');
 
   useEffect(() => {
-    // commenting out this method as it is returning as null
-    // const csrfToken = getCookie('csrfToken');
-
     // Check Firebase if user is logged in and session is still valid.
     // If session is not valid, user will need to login again.
     FirebaseAuth.onAuthStateChanged(authUser => {

@@ -12,6 +12,25 @@ const {
 const PORT = process.env.PORT || 8080;
 const app = express();
 
+<<<<<<< HEAD
+=======
+console.log('hello from mars');
+
+const corsOptions = {
+  origin: function(origin, callback) {
+    if (CORS_WHITELIST.indexOf(origin) !== -1 || !origin) {
+      return callback(null, true);
+    } else {
+      return callback(new Error('Not allowed by CORS'));
+    }
+  },
+  credentials: true,
+  exposedHeaders: ['Authorization'],
+};
+
+app.use(cors(corsOptions));
+
+>>>>>>> dev
 app.use(bp.json());
 app.use(
   bp.urlencoded({

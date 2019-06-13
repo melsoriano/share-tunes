@@ -1,6 +1,5 @@
 import React from 'react';
 import ReactDOM from 'react-dom';
-import './index.css';
 import App from './App';
 import * as serviceWorker from './serviceWorker';
 // import and wrap <App /> with contexts
@@ -9,6 +8,7 @@ import { SpotifyProvider } from './context/spotifyContext';
 import { FirebaseProvider } from './context/firebaseContext';
 import { UserProvider } from './context/userContext';
 
+<<<<<<< HEAD
 ReactDOM.render(
   <ThemeProvider>
     <UserProvider>
@@ -18,6 +18,20 @@ ReactDOM.render(
         </FirebaseProvider>
       </SpotifyProvider>
     </UserProvider>
+=======
+// import and wrap <App /> with contexts
+import { ThemeProvider } from './context/themeContext';
+import { SpotifyProvider } from './context/spotifyContext';
+import { FirebaseProvider } from './context/firebaseContext';
+
+ReactDOM.render(
+  <ThemeProvider>
+    <SpotifyProvider>
+      <FirebaseProvider>
+        <App />
+      </FirebaseProvider>
+    </SpotifyProvider>
+>>>>>>> dev
   </ThemeProvider>,
   document.getElementById('root')
 );

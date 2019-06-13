@@ -26,7 +26,7 @@
     }
   },
   "lint-staged": {
-    "gitDir": "../",
+    "gitDir": "cross-env lint-staged GIT_DIR=../../../.git git update-index --again",
     "*.{js,jsx}": [
       "pretty-quick --staged",
       "eslint src/ --fix",

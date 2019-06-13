@@ -11,16 +11,14 @@ export const ThemeProvider = ({ children }) => {
   const [mode, setMode] = useState(() => {
     if (localStorage.getItem('mode') === 'light') {
       return theme.light;
-    } 
-      return theme.dark;
-    
+    }
+    return theme.dark;
   });
   const [switchState, setSwitch] = useState(() => {
     if (localStorage.getItem('switchState')) {
       return JSON.parse(localStorage.getItem('switchState'));
-    } 
-      return false;
-    
+    }
+    return false;
   });
   return (
     // inject state into the provider, and pass along to children components
