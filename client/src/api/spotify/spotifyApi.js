@@ -31,6 +31,7 @@ function searchTracks(query, setTrackResults) {
     });
 }
 
+// TODO: refactor to have data save to context for real time updates on the front end
 function addTrackToPlaylist(trackUri) {
   getPlaylistFromDb(doc => {
     const playlistId = doc.id;
