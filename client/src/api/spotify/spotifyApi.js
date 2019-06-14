@@ -1,26 +1,65 @@
 import { SpotifyApi } from './spotifyConfig';
-import { FirebaseAuth } from '../firebase/firebaseConfig';
 
-import addNewPlaylistToDb from '../firebase/firebaseApi';
+import {
+  addNewPlaylistToDb,
+  getPlaylistFromDb,
+  addTrackToDb,
+} from '../firebase/firebaseApi';
 
 function createSpotifyPlaylist(userId, playlistName) {
   SpotifyApi.createPlaylist(userId, playlistName, {
     public: true,
   })
     .then(data => {
-      console.log('new playlist data >>>', data.body);
       const playlistId = data.body.id;
       const ownerId = data.body.owner.id;
-      console.log(ownerId);
+
       return addNewPlaylistToDb(ownerId, playlistId, playlistName);
     })
     .catch(error => {
-      console.log(error);
+      return error;
     });
 }
 
-function getPlaylist() {
-  console.log('getPlaylist');
+function searchTracks(query, setTrackResults) {
+  SpotifyApi.searchTracks(query)
+    .then(data => {
+      setTrackResults(data.body.tracks.items);
+    })
+    .catch(error => {
+      return error;
+    });
 }
 
-export default createSpotifyPlaylist;
+function addTrackToPlaylist(trackUri) {
+  getPlaylistFromDb(doc => {
+    const playlistId = doc.id;
+
+    SpotifyApi.addTracksToPlaylist(playlistId, [trackUri])
+      .then(() => {
+        addTrackToDb(trackUri, playlistId);
+      })
+      .catch(error => {
+        return error;
+      });
+  });
+}
+
+function getPlaylistTracks(query, setPlaylistResult) {
+  getPlaylistFromDb(doc => {
+    const playlistId = doc.id.toString();
+
+    SpotifyApi.getPlaylistTracks(playlistId)
+      .then(data => {
+        setPlaylistResult(data.body.items);
+      })
+      .catch(error => console.log(error));
+  });
+}
+
+export {
+  createSpotifyPlaylist,
+  searchTracks,
+  addTrackToPlaylist,
+  getPlaylistTracks,
+};

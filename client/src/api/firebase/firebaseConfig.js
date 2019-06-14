@@ -13,12 +13,15 @@ const config = {
 };
 
 // Initialize Firebase
-firebase.initializeApp(config);
+const FirebaseApp = firebase.initializeApp(config);
+
 // Create an instance of Firebase Auth used to authenticate users
 const FirebaseAuth = firebase.auth();
+
 // Creates an instance of Firestore Database
 const db = firebase.firestore();
+
 // Sets user session in browser
 FirebaseAuth.setPersistence('local');
 
-export { FirebaseAuth, db };
+export { FirebaseAuth, FirebaseApp, db };
