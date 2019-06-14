@@ -4,6 +4,7 @@ import { ThemeProvider } from 'styled-components';
 
 import Home from '../components/home';
 import Login from '../components/login';
+import TuneRoom from '../components/tuneroom';
 
 import { ThemeContext } from '../context/themeContext';
 
@@ -14,18 +15,16 @@ const ReactRouter = () => {
   return (
     <ThemeProvider theme={mode}>
       <div>
-        <ul>
-          <li>
-            <Link to="/">Login</Link>
-          </li>
-          <li>
-            <Link to="home">Home</Link>
-          </li>
-        </ul>
+        <nav>
+          <Link to="/">Login</Link>&nbsp;
+          <Link to="home">Home</Link>&nbsp;
+          <Link to="tuneroom">Tuneroom</Link>&nbsp;
+        </nav>
         <hr />
         <Router>
           <Login path="/" />
           <Home path="/home" />
+          <TuneRoom path="/tuneroom" />
         </Router>
       </div>
     </ThemeProvider>
