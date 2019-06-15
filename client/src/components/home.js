@@ -1,4 +1,4 @@
-import React, { useState, useContext } from 'react';
+import React, { useState, useContext, useEffect } from 'react';
 import { navigate } from '@reach/router';
 
 import {
@@ -16,12 +16,25 @@ function Home() {
   });
 
   // context
-  const { playlistQuery, setPlaylistQuery } = useContext(SpotifyContext);
-  const { setPlaylistResult } = useContext(SpotifyContext);
+  const {
+    playlistQuery,
+    setPlaylistQuery,
+    setPlaylistResult,
+    accessCode,
+    setAccessCode,
+  } = useContext(SpotifyContext);
+  // const { setPlaylistResult } = useContext(SpotifyContext);
+  // const {accessCode, setAccessCode} = useContext(SpotifyContext)
 
   // localStorage
   const user = JSON.parse(localStorage.getItem('user'));
-  SpotifyApi.setAccessToken(user.accessToken);
+
+  useEffect(() => {
+    console.log(user);
+    if (user !== null) {
+      SpotifyApi.setAccessToken(user.accessToken);
+    }
+  }, [user]);
 
   // helpers
   const handlePlaylistName = e => {
@@ -30,6 +43,10 @@ function Home() {
 
   const handlePlaylistQuery = e => {
     setPlaylistQuery({ playlistQuery: e.target.value });
+  };
+
+  const handleAccessCode = e => {
+    setAccessCode({ code: e.target.value });
   };
 
   return (
@@ -57,15 +74,14 @@ function Home() {
         {/** RETRIEVE A PLAYLIST */}
         <input
           type="text"
-          value={playlistQuery.query}
-          onChange={handlePlaylistQuery}
+          value={accessCode.code}
+          onChange={handleAccessCode}
           placeholder="Search Playlist"
         />
         <button
           type="submit"
           onClick={() => {
-            getPlaylistTracks(playlistQuery.query, setPlaylistResult);
-            navigate('/tuneroom');
+            getPlaylistTracks(accessCode.code, setPlaylistResult, navigate);
           }}
         >
           JOIN PLAYLIST

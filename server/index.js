@@ -8,13 +8,13 @@ const app = express();
 
 app.use(bp.json());
 app.use(
-	bp.urlencoded({
-		extended: true,
-	})
+  bp.urlencoded({
+    extended: true,
+  }),
 );
 
 app.use('/auth', authRoutes);
 
 app.listen(PORT, () => {
-	console.log(`Magic happening on ${PORT}`);
+  console.log(`Magic happening on ${PORT}`);
 });
