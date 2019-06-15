@@ -6,7 +6,7 @@ import { SpotifyContext } from '../context/spotifyContext';
 
 import { SpotifyApi } from '../api/spotify/spotifyConfig';
 
-function Home() {
+function TuneRoom() {
   // state
   const [playlist, setPlaylistName] = useState({
     playlistName: '',
@@ -116,4 +116,4 @@ function Home() {
   );
 }
 
-export default Home;
+export default TuneRoom;

@@ -52,6 +52,12 @@ function Home() {
   return (
     <div>
       <div>
+        Thanks for using ShareTunes. To create a new playlist, you will need a
+        Spotify Account. Otherwise, you can join an existing playlist using your
+        access code.
+      </div>
+      <br />
+      <div>
         {/** ADD PLAYLIST */}
         <input
           type="text"
@@ -72,7 +78,7 @@ function Home() {
         <br />
 
         {/** RETRIEVE A PLAYLIST */}
-        <input
+        {/* <input
           type="text"
           value={accessCode.code}
           onChange={handleAccessCode}
@@ -82,6 +88,14 @@ function Home() {
           type="submit"
           onClick={() => {
             getPlaylistTracks(accessCode.code, setPlaylistResult, navigate);
+          }}
+        >
+          JOIN PLAYLIST
+        </button> */}
+        <button
+          type="submit"
+          onClick={() => {
+            navigate('/join');
           }}
         >
           JOIN PLAYLIST
