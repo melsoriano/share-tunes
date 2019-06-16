@@ -5,7 +5,9 @@ import { ThemeProvider } from 'styled-components';
 import Home from '../components/home';
 import Login from '../components/login';
 import Join from '../components/join';
+import Create from '../components/create';
 import TuneRoom from '../components/tuneroom';
+import AddSong from '../components/addsong';
 
 import { ThemeContext } from '../context/themeContext';
 
@@ -25,7 +27,9 @@ const ReactRouter = () => {
         <Router>
           <Login path="/" />
           <Home path="/home" />
+          <Create path="/create" />
           <Join path="/join" />
+          <AddSong path="/add" />
           <TuneRoom path="/tuneroom" />
         </Router>
       </div>

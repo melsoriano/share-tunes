@@ -7,24 +7,24 @@ import {
 } from '../firebase/firebaseApi';
 import { db } from '../firebase/firebaseConfig';
 
-function createSpotifyPlaylist(userId, playlistName) {
+function createSpotifyPlaylist(userId, playlistName, setAccessCode, navigate) {
   const accessCodeId = Math.random()
     .toString(36)
     .substr(2, 4);
 
+  // console.log('accessCodeId: ', accessCodeId);
+  setAccessCode(accessCodeId);
+
   SpotifyApi.createPlaylist(userId, playlistName, {
     public: true,
   })
-    .then(data => {
+    .then(async data => {
       const playlistId = data.body.id;
       const ownerId = data.body.owner.id;
-
-      return addNewPlaylistToDb(
-        accessCodeId,
-        ownerId,
-        playlistId,
-        playlistName
-      );
+      // await navigate('/tuneroom');
+      await addNewPlaylistToDb(accessCodeId, ownerId, playlistId, playlistName);
+      // TODO: check if the playlist has tracks, if so navigate to /tuneroom, otherwise add songs
+      await navigate('/add');
     })
     .catch(error => {
       return error;
@@ -42,7 +42,7 @@ function searchTracks(query, setTrackResults) {
 }
 
 // TODO: refactor to have data save to context for real time updates on the front end
-function addTrackToPlaylist(trackUri) {
+function addTrackToPlaylist(trackUri, navigate) {
   getPlaylistFromDb(doc => {
     const { playlistId } = doc.data();
     const accessCodeId = doc.id;
@@ -50,6 +50,7 @@ function addTrackToPlaylist(trackUri) {
     SpotifyApi.addTracksToPlaylist(playlistId, [trackUri])
       .then(() => {
         addTrackToDb(trackUri, accessCodeId);
+        navigate('./home');
       })
       .catch(error => {
         return error;
@@ -57,11 +58,44 @@ function addTrackToPlaylist(trackUri) {
   });
 }
 
-function getPlaylistTracks(accessCode, setPlaylistResult, navigate) {
+// Add initial track after playlist creation
+function addStartingTrack(trackUri, accessCode, setPlaylistResult, navigate) {
+  getPlaylistFromDb(doc => {
+    // const user = localStorage.getItem('user');
+    const { playlistId } = doc.data();
+    const accessCodeId = doc.id;
+    SpotifyApi.addTracksToPlaylist(playlistId, [trackUri])
+      .then(() => {
+        console.log(playlistId);
+        console.log(accessCode);
+        addTrackToDb(trackUri, accessCodeId);
+      })
+      .then(() => {
+        SpotifyApi.getPlaylistTracks(playlistId.toString())
+          .then(async data => {
+            await setPlaylistResult(data.body.items);
+            await navigate('/tuneroom');
+          })
+          .catch(error => error);
+      })
+      .catch(error => {
+        return error;
+      });
+  });
+}
+
+function getPlaylistTracks(
+  accessCode,
+  // setPlaylistUri,
+  setPlaylistResult,
+  setPlaylistId,
+  navigate
+) {
   getPlaylistFromDb(doc => {
     const user = localStorage.getItem('user');
     if (accessCode === doc.id) {
       const { playlistId, ownerId } = doc.data();
+      setPlaylistId(playlistId.toString());
       if (!user) {
         db.doc(`users/${ownerId}`)
           .get()
@@ -90,7 +124,7 @@ function getPlaylistTracks(accessCode, setPlaylistResult, navigate) {
           .catch(error => error);
       }
     } else {
-      console.log('access code not valid');
+      // console.log('access code not valid');
       return 'access code not valid';
     }
   });
@@ -100,5 +134,6 @@ export {
   createSpotifyPlaylist,
   searchTracks,
   addTrackToPlaylist,
+  addStartingTrack,
   getPlaylistTracks,
 };

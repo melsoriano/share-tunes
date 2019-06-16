@@ -59,7 +59,7 @@ function Home() {
       <br />
       <div>
         {/** ADD PLAYLIST */}
-        <input
+        {/* <input
           type="text"
           value={playlist.playlistName}
           onChange={handlePlaylistName}
@@ -70,6 +70,14 @@ function Home() {
           onClick={() => createSpotifyPlaylist(user.uid, playlist.playlistName)}
         >
           CREATE PLAYLIST
+        </button> */}
+        <button
+          type="submit"
+          onClick={() => {
+            navigate('/create');
+          }}
+        >
+          CREATE
         </button>
         <br />
         <br />
@@ -98,7 +106,7 @@ function Home() {
             navigate('/join');
           }}
         >
-          JOIN PLAYLIST
+          JOIN
         </button>
       </div>
       <br />

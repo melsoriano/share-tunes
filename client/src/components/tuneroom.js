@@ -1,4 +1,4 @@
-import React, { useState, useContext } from 'react';
+import React, { useState, useContext, useEffect } from 'react';
 import { Link, navigate } from '@reach/router';
 
 import { searchTracks, addTrackToPlaylist } from '../api/spotify/spotifyApi';
@@ -13,9 +13,16 @@ function TuneRoom() {
   });
 
   // context
-  const { searchQuery, setSearchQuery } = useContext(SpotifyContext);
-  const { trackResults, setTrackResults } = useContext(SpotifyContext);
-  const { playlistResult } = useContext(SpotifyContext);
+  // TODO: can this be cleaned up?
+  const {
+    searchQuery,
+    setSearchQuery,
+    accessCode,
+    playlistId,
+    trackResults,
+    setTrackResults,
+    playlistResult,
+  } = useContext(SpotifyContext);
 
   // localStorage
   const user = JSON.parse(localStorage.getItem('user'));
@@ -36,6 +43,15 @@ function TuneRoom() {
 
   return (
     <div>
+      {/* TODO: on refresh, this breaks */}
+      {accessCode !== '' ? (
+        <>
+          <h2>Access Code: {accessCode}</h2>
+          <h3>Playlist ID: {playlistId}</h3>
+        </>
+      ) : (
+        <h2>Access Code Invalid</h2>
+      )}
       <div>
         {/** PLAYLSIT RESULTS */}
         {playlistResult.data !== '' ? (
@@ -89,26 +105,23 @@ function TuneRoom() {
 
       {/** SEARCH RESULTS */}
       {trackResults.data !== '' ? (
-        trackResults.map(
-          (result, i) => (
-            <div>
-              <ul key={i}>
-                <li>
-                  <img src={result.album.images[2].url} alt="album-cover" />
-                  {result.artists[0].name} - {result.name}
-                  {/* {console.log(result)} */}
-                  <button
-                    type="submit"
-                    onClick={() => handleAddTrack(result.uri.toString())}
-                  >
-                    add
-                  </button>
-                </li>
-              </ul>
-            </div>
-          ),
-          <div>hello</div>
-        )
+        trackResults.map((result, i) => (
+          <div>
+            <ul key={i}>
+              <li>
+                <img src={result.album.images[2].url} alt="album-cover" />
+                {result.artists[0].name} - {result.name}
+                {/* {console.log(result)} */}
+                <button
+                  type="submit"
+                  onClick={() => handleAddTrack(result.uri.toString())}
+                >
+                  add
+                </button>
+              </li>
+            </ul>
+          </div>
+        ))
       ) : (
         <h2>Submit a song!</h2>
       )}
