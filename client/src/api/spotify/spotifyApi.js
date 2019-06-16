@@ -46,6 +46,8 @@ function addTrackToPlaylist(trackUri) {
   getPlaylistFromDb(doc => {
     const { playlistId } = doc.data();
     const accessCodeId = doc.id;
+    console.log('playlist id>>>', playlistId);
+    console.log('access code from spotify api>>>', accessCodeId);
 
     SpotifyApi.addTracksToPlaylist(playlistId, [trackUri])
       .then(() => {
@@ -96,9 +98,46 @@ function getPlaylistTracks(accessCode, setPlaylistResult, navigate) {
   });
 }
 
+function playTrack() {
+  // REMOVE HARD CODE!!!
+  const playlistId = '10rcg17wVVsXXGBZ1EatTD';
+
+  SpotifyApi.getPlaylist(playlistId)
+    .then(data => {
+      const { uri } = data.body;
+      SpotifyApi.play({ context_uri: uri }).then(() => {
+        console.log('uri>>', uri);
+        SpotifyApi.getMyCurrentPlaybackState().then(state => {
+          // TODO: Set state to have `isPlaying` set to true if
+          console.log(state);
+          return state;
+        });
+      });
+    })
+    .catch(error => {
+      return error;
+    });
+}
+
+function pauseTrack() {
+  SpotifyApi.pause()
+    .then(() => {
+      SpotifyApi.getMyCurrentPlaybackState().then(state => {
+        // TODO: Set state to have `isPlaying` set to true or false
+        console.log(state);
+        return state;
+      });
+    })
+    .catch(error => {
+      return error;
+    });
+}
+
 export {
   createSpotifyPlaylist,
   searchTracks,
   addTrackToPlaylist,
   getPlaylistTracks,
+  playTrack,
+  pauseTrack,
 };

@@ -1,12 +1,18 @@
-import React, { useState, useContext } from 'react';
+import React, { useState, useContext, useEffect } from 'react';
 import { Link, navigate } from '@reach/router';
+import SpotifyPlayer from 'react-spotify-web-playback';
 
-import { searchTracks, addTrackToPlaylist } from '../api/spotify/spotifyApi';
+import {
+  searchTracks,
+  addTrackToPlaylist,
+  playTrack,
+  pauseTrack,
+} from '../api/spotify/spotifyApi';
 import { SpotifyContext } from '../context/spotifyContext';
 
 import { SpotifyApi } from '../api/spotify/spotifyConfig';
 
-function Home() {
+function TuneRoom() {
   // state
   const [playlist, setPlaylistName] = useState({
     playlistName: '',
@@ -37,6 +43,17 @@ function Home() {
   return (
     <div>
       <div>
+        <SpotifyPlayer
+          token={user.accessToken}
+          uris={['spotify:playlist:10rcg17wVVsXXGBZ1EatTD']}
+        />
+        {/** Player Controls */}
+        <button type="submit" onClick={() => playTrack()}>
+          PLAY
+        </button>
+        <button type="submit" onClick={() => pauseTrack()}>
+          PAUSE
+        </button>
         {/** PLAYLSIT RESULTS */}
         {playlistResult.data !== '' ? (
           playlistResult.map((result, i) => (
@@ -116,4 +133,4 @@ function Home() {
   );
 }
 
-export default Home;
+export default TuneRoom;

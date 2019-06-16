@@ -29,6 +29,7 @@ function getPlaylistFromDb(next) {
 }
 
 function addTrackToDb(trackUri, accessCodeId) {
+  console.log('access code id>>', accessCodeId);
   db.doc(`playlists/${accessCodeId}`)
     .update({
       tracks: firebase.firestore.FieldValue.arrayUnion({

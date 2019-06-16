@@ -30,7 +30,6 @@ function Home() {
   const user = JSON.parse(localStorage.getItem('user'));
 
   useEffect(() => {
-    console.log(user);
     if (user !== null) {
       SpotifyApi.setAccessToken(user.accessToken);
     }
