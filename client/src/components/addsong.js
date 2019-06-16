@@ -1,52 +1,58 @@
-import React, { useState, useContext, useEffect } from 'react';
-import { Link, navigate } from '@reach/router';
+import React, { useContext, useEffect } from 'react';
+import { navigate } from '@reach/router';
 
-import {
-  searchTracks,
-  addTrackToPlaylist,
-  addStartingTrack,
-} from '../api/spotify/spotifyApi';
+import { searchTracks, addStartingTrack } from '../api/spotify/spotifyApi';
 import { SpotifyContext } from '../context/spotifyContext';
 
 import { SpotifyApi } from '../api/spotify/spotifyConfig';
 
 const AddSong = () => {
-  // localStorage
   const user = JSON.parse(localStorage.getItem('user'));
-  SpotifyApi.setAccessToken(user.accessToken);
-  // state
+
+  // TODO: Render playlist name in tuneroom...context?
   // const [playlist, setPlaylistName] = useState({
   //   playlistName: '',
   // });
+
+  SpotifyApi.setAccessToken(user.accessToken);
   useEffect(() => {
     if (user !== null) {
       SpotifyApi.setAccessToken(user.accessToken);
     }
   }, [user]);
 
-  // context
-  const { searchQuery, setSearchQuery, accessCode, playlistId } = useContext(
-    SpotifyContext
-  );
-  const { trackResults, setTrackResults } = useContext(SpotifyContext);
-  const { playlistResult, setPlaylistResult } = useContext(SpotifyContext);
+  const {
+    searchQuery,
+    setSearchQuery,
+    accessCode,
+    setAccessCode,
+    setPlaylistId,
+    trackResults,
+    setTrackResults,
+    setPlaylistResult,
+  } = useContext(SpotifyContext);
 
-  // helpers
   const search = e => {
     setSearchQuery({ query: e.target.value });
   };
 
   const handleAddTrack = result => {
-    // addTrackToPlaylist(result, navigate);
-    addStartingTrack(result, accessCode, setPlaylistResult, navigate);
+    addStartingTrack(
+      result,
+      accessCode,
+      setPlaylistResult,
+      setPlaylistId,
+      navigate
+    );
+    setAccessCode(accessCode);
   };
 
   const handleCloseSearch = () => {
     setTrackResults({ data: '' });
   };
+
   return (
     <>
-      {/* {console.log(accessCode)} */}
       {/** SEARCH FOR A SONG */}
       <input
         type="text"
@@ -61,6 +67,7 @@ const AddSong = () => {
         SEARCH
       </button>
       {/* CLOSE SEARCH RESULTS */}
+      {/* TODO: Automatically close search results on redirect */}
       &nbsp;
       {trackResults.data !== '' && (
         <button type="submit" onClick={() => handleCloseSearch()}>
@@ -77,7 +84,6 @@ const AddSong = () => {
               <li>
                 <img src={result.album.images[2].url} alt="album-cover" />
                 {result.artists[0].name} - {result.name}
-                {/* {console.log(result)} */}
                 <button
                   type="submit"
                   onClick={() => handleAddTrack(result.uri.toString())}

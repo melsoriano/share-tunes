@@ -4,34 +4,18 @@ import axios from 'axios';
 import { FirebaseAuth, db } from '../api/firebase/firebaseConfig';
 import { spotifyAuthEndpoint, SpotifyApi } from '../api/spotify/spotifyConfig';
 import { getUrlParameter } from '../utils/helpers';
-import {
-  createSpotifyPlaylist,
-  getPlaylistTracks,
-} from '../api/spotify/spotifyApi';
-import { SpotifyContext } from '../context/spotifyContext';
 
 function Home() {
-  const [isAuthenticated, setIsAuthenticated] = useState(false);
-  const [isLoading, setIsLoading] = useState('false');
-  const spotifyAuthCode = getUrlParameter('code');
-  // state
-  const [playlist, setPlaylistName] = useState({
-    playlistName: '',
-  });
-
-  // context
-  const {
-    playlistQuery,
-    setPlaylistQuery,
-    setPlaylistResult,
-    accessCode,
-    setAccessCode,
-  } = useContext(SpotifyContext);
-  // const { setPlaylistResult } = useContext(SpotifyContext);
-  // const {accessCode, setAccessCode} = useContext(SpotifyContext)
-
-  // localStorage
   const user = JSON.parse(localStorage.getItem('user'));
+
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
+
+  const spotifyAuthCode = getUrlParameter('code');
+
+  // TODO: Render playlist name in tuneroom...context?
+  // const [setPlaylistName] = useState({
+  //   playlistName: '',
+  // });
 
   useEffect(() => {
     if (user !== null) {
@@ -47,13 +31,11 @@ function Home() {
             .get()
             .then(snapshot => {
               const dbUser = snapshot.data();
-              // merge auth and db user
               const userData = {
                 uid: authUser.uid,
                 email: authUser.email,
                 ...dbUser,
               };
-              // I think setting user to localStorage would work best here:
               localStorage.setItem('user', JSON.stringify(userData));
             });
         }
@@ -71,19 +53,6 @@ function Home() {
     });
     authListener();
   }, [spotifyAuthCode]);
-
-  // helpers
-  const handlePlaylistName = e => {
-    setPlaylistName({ playlistName: e.target.value });
-  };
-
-  const handlePlaylistQuery = e => {
-    setPlaylistQuery({ playlistQuery: e.target.value });
-  };
-
-  const handleAccessCode = e => {
-    setAccessCode({ code: e.target.value });
-  };
 
   return (
     <div>
@@ -116,7 +85,6 @@ function Home() {
               To create a new playlist, you will need a Spotify Account.
             </div>
           ) : (
-            // navigate('/create')
             <div>
               <h3>
                 YOU ARE AUTHENTICATED! ^o^

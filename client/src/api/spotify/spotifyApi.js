@@ -12,7 +12,6 @@ function createSpotifyPlaylist(userId, playlistName, setAccessCode, navigate) {
     .toString(36)
     .substr(2, 4);
 
-  // console.log('accessCodeId: ', accessCodeId);
   setAccessCode(accessCodeId);
 
   SpotifyApi.createPlaylist(userId, playlistName, {
@@ -21,9 +20,7 @@ function createSpotifyPlaylist(userId, playlistName, setAccessCode, navigate) {
     .then(async data => {
       const playlistId = data.body.id;
       const ownerId = data.body.owner.id;
-      // await navigate('/tuneroom');
       await addNewPlaylistToDb(accessCodeId, ownerId, playlistId, playlistName);
-      // TODO: check if the playlist has tracks, if so navigate to /tuneroom, otherwise add songs
       await navigate('/add');
     })
     .catch(error => {
@@ -59,15 +56,21 @@ function addTrackToPlaylist(trackUri, navigate) {
 }
 
 // Add initial track after playlist creation
-function addStartingTrack(trackUri, accessCode, setPlaylistResult, navigate) {
+function addStartingTrack(
+  trackUri,
+  accessCode,
+  setPlaylistResult,
+  setPlaylistId,
+  navigate
+) {
   getPlaylistFromDb(doc => {
-    // const user = localStorage.getItem('user');
-    const { playlistId } = doc.data();
+    console.log(accessCode);
+    const user = localStorage.getItem('user');
+    const { playlistId, ownerId } = doc.data();
     const accessCodeId = doc.id;
+    setPlaylistId(playlistId);
     SpotifyApi.addTracksToPlaylist(playlistId, [trackUri])
       .then(() => {
-        console.log(playlistId);
-        console.log(accessCode);
         addTrackToDb(trackUri, accessCodeId);
       })
       .then(() => {
@@ -124,7 +127,6 @@ function getPlaylistTracks(
           .catch(error => error);
       }
     } else {
-      // console.log('access code not valid');
       return 'access code not valid';
     }
   });

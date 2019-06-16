@@ -1,22 +1,19 @@
-import React, { useState, useContext, useEffect } from 'react';
+import React, { useContext, useEffect } from 'react';
 import { navigate } from '@reach/router';
 
 import { getPlaylistTracks } from '../api/spotify/spotifyApi';
 import { SpotifyContext } from '../context/spotifyContext';
-
 import { SpotifyApi } from '../api/spotify/spotifyConfig';
 
 const Join = () => {
-  // context
+  const user = JSON.parse(localStorage.getItem('user'));
+
   const {
     setPlaylistResult,
     accessCode,
     setAccessCode,
     setPlaylistId,
   } = useContext(SpotifyContext);
-
-  // localStorage
-  const user = JSON.parse(localStorage.getItem('user'));
 
   useEffect(() => {
     if (user !== null) {
@@ -28,6 +25,7 @@ const Join = () => {
     setAccessCode({ code: e.target.value });
   };
 
+  // TODO: add these EVERYWHERE...classname?
   window.addEventListener('keydown', e => {
     if (e.keyCode === 13) {
       getPlaylistTracks(

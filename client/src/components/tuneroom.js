@@ -1,16 +1,17 @@
-import React, { useState, useContext, useEffect } from 'react';
+import React, { useContext } from 'react';
 import { Link, navigate } from '@reach/router';
 
 import { searchTracks, addTrackToPlaylist } from '../api/spotify/spotifyApi';
 import { SpotifyContext } from '../context/spotifyContext';
-
 import { SpotifyApi } from '../api/spotify/spotifyConfig';
 
 function TuneRoom() {
-  // state
-  const [playlist, setPlaylistName] = useState({
-    playlistName: '',
-  });
+  const user = JSON.parse(localStorage.getItem('user'));
+
+  // TODO: Render playlist name in tuneroom...context?
+  // const [playlist, setPlaylistName] = useState({
+  //   playlistName: '',
+  // });
 
   // context
   // TODO: can this be cleaned up?
@@ -24,11 +25,8 @@ function TuneRoom() {
     playlistResult,
   } = useContext(SpotifyContext);
 
-  // localStorage
-  const user = JSON.parse(localStorage.getItem('user'));
   SpotifyApi.setAccessToken(user.accessToken);
 
-  // helpers
   const search = e => {
     setSearchQuery({ query: e.target.value });
   };
@@ -46,8 +44,12 @@ function TuneRoom() {
       {/* TODO: on refresh, this breaks */}
       {accessCode !== '' ? (
         <>
-          <h2>Access Code: {accessCode}</h2>
-          <h3>Playlist ID: {playlistId}</h3>
+          <h2>
+            Access Code: {accessCode} {console.log(accessCode)}
+          </h2>
+          <h3>
+            Playlist ID: {playlistId} {console.log(playlistId)}
+          </h3>
         </>
       ) : (
         <h2>Access Code Invalid</h2>
@@ -111,7 +113,6 @@ function TuneRoom() {
               <li>
                 <img src={result.album.images[2].url} alt="album-cover" />
                 {result.artists[0].name} - {result.name}
-                {/* {console.log(result)} */}
                 <button
                   type="submit"
                   onClick={() => handleAddTrack(result.uri.toString())}
