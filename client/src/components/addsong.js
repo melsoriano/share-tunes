@@ -51,6 +51,12 @@ const AddSong = () => {
     setTrackResults({ data: '' });
   };
 
+  window.addEventListener('keydown', e => {
+    if (e.keyCode === 13) {
+      searchTracks(searchQuery.query, setTrackResults);
+    }
+  });
+
   return (
     <>
       {/** SEARCH FOR A SONG */}

@@ -49,9 +49,9 @@ const Join = () => {
       <button
         type="submit"
         onClick={() => {
-          setAccessCode(accessCode.code);
+          setAccessCode(accessCode);
           getPlaylistTracks(
-            accessCode.code,
+            accessCode,
             setPlaylistResult,
             setPlaylistId,
             navigate

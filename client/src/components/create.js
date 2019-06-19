@@ -24,6 +24,17 @@ const Create = () => {
     setPlaylistName({ playlistName: e.target.value });
   };
 
+  window.addEventListener('keydown', e => {
+    if (e.keyCode === 13) {
+      createSpotifyPlaylist(
+        user.uid,
+        playlist.playlistName,
+        setAccessCode,
+        navigate
+      );
+    }
+  });
+
   return (
     <div>
       <input
