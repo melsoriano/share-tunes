@@ -1,33 +1,87 @@
-import React, { useState, useContext, useEffect } from 'react';
+import React, { useContext, useEffect } from 'react';
 import { Link, navigate } from '@reach/router';
 import SpotifyPlayer from 'react-spotify-web-playback';
 
-import {
-  searchTracks,
-  addTrackToPlaylist,
-  playTrack,
-  pauseTrack,
-} from '../api/spotify/spotifyApi';
+import axios from 'axios';
+import { searchTracks, addTrackToPlaylist } from '../api/spotify/spotifyApi';
 import { SpotifyContext } from '../context/spotifyContext';
-
 import { SpotifyApi } from '../api/spotify/spotifyConfig';
+import { db } from '../api/firebase/firebaseConfig';
 
 function TuneRoom() {
-  // state
-  const [playlist, setPlaylistName] = useState({
-    playlistName: '',
-  });
+  const user = JSON.parse(localStorage.getItem('user'));
+
+  // TODO: Render playlist name in tuneroom...context?
+  // const [playlist, setPlaylistName] = useState({
+  //   playlistName: '',
+  // });
 
   // context
-  const { searchQuery, setSearchQuery } = useContext(SpotifyContext);
-  const { trackResults, setTrackResults } = useContext(SpotifyContext);
-  const { playlistResult } = useContext(SpotifyContext);
+  // TODO: can this be cleaned up?
+  const {
+    searchQuery,
+    setSearchQuery,
+    accessCode,
+    playlistId,
+    trackResults,
+    setTrackResults,
+    playlistResult,
+    playlistUri,
+  } = useContext(SpotifyContext);
 
-  // localStorage
-  const user = JSON.parse(localStorage.getItem('user'));
-  SpotifyApi.setAccessToken(user.accessToken);
+  useEffect(() => {
+    function getRefreshToken() {
+      axios
+        .post('/auth/refresh_token', user)
+        .then(response => {
+          const { accessToken, refreshToken } = response.data;
+          SpotifyApi.setAccessToken(accessToken);
+          SpotifyApi.setRefreshToken(refreshToken);
+        })
+        .catch(err => {
+          console.log(err);
+          return err;
+        });
+    }
+    getRefreshToken();
+    setInterval(() => {
+      getRefreshToken();
+    }, 3000000);
+  }, [user]);
 
-  // helpers
+  useEffect(() => {
+    db.collection('users')
+      .doc(user.uid)
+      .onSnapshot(doc => {
+        const { accessToken } = doc.data();
+        SpotifyApi.setAccessToken(accessToken);
+        localStorage.setItem(
+          'user',
+          JSON.stringify({ uid: doc.id, ...doc.data() })
+        );
+      });
+  });
+
+  useEffect(() => {
+    //  updates in realtime from firestore
+    db.collection('playlists')
+      .doc(accessCode)
+      .onSnapshot(doc => {
+        doc.data().tracks.map(data => {
+          SpotifyApi.getPlaylistTracks(playlistId).then(tracks => {
+            tracks.body.items.map(spotifyApi => {
+              // TODO:
+              // increment vote count for specific track
+              // if (data.trackUri === spotifyApi.track.uri) {
+              //   db.doc(`playlists/${accessCode}`).set({
+              //   }, { merge: true });
+              // }
+            });
+          });
+        });
+      });
+  }, [accessCode, playlistId]);
+
   const search = e => {
     setSearchQuery({ query: e.target.value });
   };
@@ -42,18 +96,19 @@ function TuneRoom() {
 
   return (
     <div>
+      {/* TODO: on refresh, this breaks */}
+      {accessCode !== '' ? (
+        <>
+          <h2>
+            Access Code:
+            {/* {accessCode} {console.log(accessCode)} */}
+          </h2>
+        </>
+      ) : (
+        <h2>Access Code Invalid</h2>
+      )}
       <div>
-        <SpotifyPlayer
-          token={user.accessToken}
-          uris={['spotify:playlist:10rcg17wVVsXXGBZ1EatTD']}
-        />
-        {/** Player Controls */}
-        <button type="submit" onClick={() => playTrack()}>
-          PLAY
-        </button>
-        <button type="submit" onClick={() => pauseTrack()}>
-          PAUSE
-        </button>
+        <SpotifyPlayer token={user.accessToken} uris={[`${playlistUri}`]} />
         {/** PLAYLSIT RESULTS */}
         {playlistResult.data !== '' ? (
           playlistResult.map((result, i) => (
@@ -106,26 +161,22 @@ function TuneRoom() {
 
       {/** SEARCH RESULTS */}
       {trackResults.data !== '' ? (
-        trackResults.map(
-          (result, i) => (
-            <div>
-              <ul key={i}>
-                <li>
-                  <img src={result.album.images[2].url} alt="album-cover" />
-                  {result.artists[0].name} - {result.name}
-                  {/* {console.log(result)} */}
-                  <button
-                    type="submit"
-                    onClick={() => handleAddTrack(result.uri.toString())}
-                  >
-                    add
-                  </button>
-                </li>
-              </ul>
-            </div>
-          ),
-          <div>hello</div>
-        )
+        trackResults.map((result, i) => (
+          <div>
+            <ul key={i}>
+              <li>
+                <img src={result.album.images[2].url} alt="album-cover" />
+                {result.artists[0].name} - {result.name}
+                <button
+                  type="submit"
+                  onClick={() => handleAddTrack(result.uri.toString())}
+                >
+                  add
+                </button>
+              </li>
+            </ul>
+          </div>
+        ))
       ) : (
         <h2>Submit a song!</h2>
       )}

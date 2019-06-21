@@ -3,8 +3,8 @@ const { FirebaseAdmin, FirebaseApp } = require('./firebaseConfig');
 const SpotifyApi = require('./spotifyConfig');
 
 module.exports = {
-  serviceAccount,
-  FirebaseAdmin,
-  FirebaseApp,
-  SpotifyApi,
+	serviceAccount,
+	FirebaseAdmin,
+	FirebaseApp,
+	SpotifyApi,
 };

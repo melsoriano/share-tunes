@@ -1,12 +1,19 @@
 import * as firebase from 'firebase';
 import { db } from './firebaseConfig';
 
-function addNewPlaylistToDb(accessCodeId, ownerId, playlistId, playlistName) {
+function addNewPlaylistToDb(
+  accessCodeId,
+  ownerId,
+  playlistId,
+  playlistName,
+  uri
+) {
   db.doc(`playlists/${accessCodeId}`).set(
     {
       ownerId,
       playlistId,
       playlistName,
+      uri,
       tracks: [{ trackUri: '' }],
     },
     { merge: true }
@@ -23,7 +30,6 @@ function getPlaylistFromDb(next) {
       });
     })
     .catch(error => {
-      console.log(error);
       return error;
     });
 }

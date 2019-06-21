@@ -12,7 +12,15 @@ export const SpotifyProvider = ({ children }) => {
   });
   const [playlistQuery, setPlaylistQuery] = useState({ query: '' });
   const [playlistResult, setPlaylistResult] = useState({ data: '' });
+  const [playlistId, setPlaylistId] = useState({ data: '' });
   const [accessCode, setAccessCode] = useState({ code: '' });
+  const [spotifyRefreshToken, setSpotifyRefreshToken] = useState({
+    expiresIn: '',
+  });
+  const [playlistUri, setPlaylistUri] = useState({
+    uri: '',
+  });
+
   return (
     // inject state into the provider, and pass along to children components
     <SpotifyContext.Provider
@@ -20,6 +28,8 @@ export const SpotifyProvider = ({ children }) => {
         playlistQuery,
         setPlaylistQuery,
         playlistResult,
+        playlistId,
+        setPlaylistId,
         setPlaylistResult,
         spotifyToken,
         setSpotifyToken,
@@ -29,6 +39,10 @@ export const SpotifyProvider = ({ children }) => {
         setTrackResults,
         accessCode,
         setAccessCode,
+        spotifyRefreshToken,
+        setSpotifyRefreshToken,
+        playlistUri,
+        setPlaylistUri,
       }}
     >
       {children}

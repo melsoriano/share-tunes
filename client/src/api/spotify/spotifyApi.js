@@ -7,24 +7,28 @@ import {
 } from '../firebase/firebaseApi';
 import { db } from '../firebase/firebaseConfig';
 
-function createSpotifyPlaylist(userId, playlistName) {
+function createSpotifyPlaylist(userId, playlistName, setAccessCode, navigate) {
   const accessCodeId = Math.random()
     .toString(36)
     .substr(2, 4);
 
+  setAccessCode(accessCodeId);
+
   SpotifyApi.createPlaylist(userId, playlistName, {
     public: true,
   })
-    .then(data => {
+    .then(async data => {
       const playlistId = data.body.id;
       const ownerId = data.body.owner.id;
-
-      return addNewPlaylistToDb(
+      const { uri } = data.body;
+      await addNewPlaylistToDb(
         accessCodeId,
         ownerId,
         playlistId,
-        playlistName
+        playlistName,
+        uri
       );
+      await navigate('/add');
     })
     .catch(error => {
       return error;
@@ -42,16 +46,15 @@ function searchTracks(query, setTrackResults) {
 }
 
 // TODO: refactor to have data save to context for real time updates on the front end
-function addTrackToPlaylist(trackUri) {
+function addTrackToPlaylist(trackUri, navigate) {
   getPlaylistFromDb(doc => {
     const { playlistId } = doc.data();
     const accessCodeId = doc.id;
-    console.log('playlist id>>>', playlistId);
-    console.log('access code from spotify api>>>', accessCodeId);
 
     SpotifyApi.addTracksToPlaylist(playlistId, [trackUri])
       .then(() => {
         addTrackToDb(trackUri, accessCodeId);
+        navigate('./home');
       })
       .catch(error => {
         return error;
@@ -59,37 +62,85 @@ function addTrackToPlaylist(trackUri) {
   });
 }
 
-function getPlaylistTracks(accessCode, setPlaylistResult, navigate) {
+// Add initial track after playlist creation
+function addStartingTrack(
+  trackUri,
+  accessCode,
+  setPlaylistResult,
+  setPlaylistId,
+  navigate
+) {
   getPlaylistFromDb(doc => {
     const user = localStorage.getItem('user');
-    if (accessCode === doc.id) {
-      const { playlistId, ownerId } = doc.data();
-      if (!user) {
-        db.doc(`users/${ownerId}`)
-          .get()
-          .then(async playlistOwner => {
-            const { accessToken, refreshToken } = playlistOwner.data();
-            const unAuthUser = {
-              accessToken,
-              refreshToken,
-              playlistId,
-            };
-            SpotifyApi.setAccessToken(accessToken);
-            SpotifyApi.getPlaylistTracks(playlistId.toString())
-              .then(async data => {
-                await localStorage.setItem('user', JSON.stringify(unAuthUser));
-                await setPlaylistResult(data.body.items);
-                await navigate('/tuneroom');
-              })
-              .catch(error => error);
-          });
-      } else {
+    const { playlistId, ownerId } = doc.data();
+    const accessCodeId = doc.id;
+    setPlaylistId(playlistId);
+    SpotifyApi.addTracksToPlaylist(playlistId, [trackUri])
+      .then(() => {
+        addTrackToDb(trackUri, accessCodeId);
+      })
+      .then(() => {
         SpotifyApi.getPlaylistTracks(playlistId.toString())
           .then(async data => {
             await setPlaylistResult(data.body.items);
             await navigate('/tuneroom');
           })
           .catch(error => error);
+      })
+      .catch(error => {
+        return error;
+      });
+  });
+}
+
+function getPlaylistTracks(
+  accessCode,
+  setPlaylistUri,
+  setPlaylistResult,
+  setPlaylistId,
+  navigate
+) {
+  getPlaylistFromDb(doc => {
+    const user = localStorage.getItem('user');
+    if (accessCode === doc.id) {
+      const { playlistId, ownerId, uri } = doc.data();
+      setPlaylistId(playlistId.toString());
+      if (!user) {
+        db.doc(`users/${ownerId}`)
+          .get()
+          .then(async playlistOwner => {
+            const { accessToken, refreshToken, email } = playlistOwner.data();
+
+            const unAuthUser = {
+              uid: playlistOwner.id,
+              email,
+              accessToken,
+              refreshToken,
+              playlistId,
+              uri,
+            };
+            SpotifyApi.setAccessToken(accessToken);
+            SpotifyApi.getPlaylistTracks(playlistId.toString())
+              .then(async data => {
+                await localStorage.setItem('user', JSON.stringify(unAuthUser));
+                await setPlaylistUri(uri);
+                await setPlaylistResult(data.body.items);
+                await navigate('/tuneroom');
+              })
+              .catch(error => {
+                return error;
+              });
+          });
+      } else {
+        SpotifyApi.getPlaylistTracks(playlistId.toString())
+          .then(async data => {
+            await setPlaylistUri(uri);
+            await setPlaylistResult(data.body.items);
+            await navigate('/tuneroom');
+          })
+          .catch(error => {
+            return error;
+          });
       }
     } else {
       console.log('access code not valid');
@@ -98,18 +149,15 @@ function getPlaylistTracks(accessCode, setPlaylistResult, navigate) {
   });
 }
 
-function playTrack() {
+function playTrack(playlistId) {
   // REMOVE HARD CODE!!!
-  const playlistId = '10rcg17wVVsXXGBZ1EatTD';
 
   SpotifyApi.getPlaylist(playlistId)
     .then(data => {
       const { uri } = data.body;
       SpotifyApi.play({ context_uri: uri }).then(() => {
-        console.log('uri>>', uri);
         SpotifyApi.getMyCurrentPlaybackState().then(state => {
-          // TODO: Set state to have `isPlaying` set to true if
-          console.log(state);
+          // TODO: Set state to have `isPlaying` set to true if song is playing
           return state;
         });
       });
@@ -123,8 +171,6 @@ function pauseTrack() {
   SpotifyApi.pause()
     .then(() => {
       SpotifyApi.getMyCurrentPlaybackState().then(state => {
-        // TODO: Set state to have `isPlaying` set to true or false
-        console.log(state);
         return state;
       });
     })
@@ -137,6 +183,7 @@ export {
   createSpotifyPlaylist,
   searchTracks,
   addTrackToPlaylist,
+  addStartingTrack,
   getPlaylistTracks,
   playTrack,
   pauseTrack,

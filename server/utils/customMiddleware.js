@@ -14,7 +14,7 @@ function attachCsrfToken(url, cookie, value) {
 function checkIfSignedIn(url) {
   return (req, res, next) => {
     if (req.url == url) {
-      let sessionCookie = req.cookies.session || '';
+      const sessionCookie = req.cookies.session || '';
       verifySession(sessionCookie)
         .then(decodedClaims => {
           res.redirect(process.env.CLIENT_URL);
