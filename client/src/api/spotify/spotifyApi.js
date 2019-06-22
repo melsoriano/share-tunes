@@ -66,37 +66,23 @@ function addTrackToPlaylist(trackUri, navigate) {
 }
 
 // Add initial track after playlist creation
-function addStartingTrack(
-  trackUri,
-  accessCode,
-  setPlaylistUri,
-  setPlaylistResult,
-  setPlaylistId,
-  navigate
-) {
+function addStartingTrack(trackUri, navigate) {
   getPlaylistFromDb(doc => {
-    // console.log(accessCode);
-    const user = localStorage.getItem('user');
-    const { playlistId, ownerId, uri } = doc.data();
-    const accessCodeId = doc.id;
-    setPlaylistId(playlistId);
-    SpotifyApi.addTracksToPlaylist(playlistId, [trackUri])
-      .then(() => {
-        console.log(trackUri);
-        addTrackToDb(trackUri, accessCodeId);
-      })
-      .then(() => {
-        SpotifyApi.getPlaylistTracks(playlistId.toString())
-          .then(async data => {
-            await setPlaylistResult(data.body.items);
-            await setPlaylistUri(uri);
-            await navigate('/tuneroom');
-          })
-          .catch(error => error);
-      })
-      .catch(error => {
-        return error;
-      });
+    // check localStorage for current access code and match to get the correct playlist from db
+    const accessCodeId = localStorage.getItem('accessCode');
+    if (doc.id === accessCodeId) {
+      const { playlistId } = doc.data();
+      SpotifyApi.addTracksToPlaylist(playlistId, [trackUri.uri])
+        .then(() => {
+          addTrackToDb(trackUri, accessCodeId);
+        })
+        .then(() => {
+          SpotifyApi.getPlaylistTracks(playlistId).then(navigate('/tuneroom'));
+        })
+        .catch(error => {
+          return error;
+        });
+    }
   });
 }
 

@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from 'react';
 // import * as firebase from 'firebase';
 import { db } from '../api/firebase/firebaseConfig';
-import { SpotifyApi } from '../api/spotify/spotifyConfig';
 
 // create instance of context
 export const SpotifyContext = React.createContext();
@@ -39,103 +38,70 @@ export const SpotifyProvider = ({ children }) => {
           if (!doc.exists) {
             return {};
           }
-          console.log('DOC: ', doc.data());
+          // console.log('DOC: ', doc.data());
           await setDocumentOwnerId({ data: doc.data().ownerId });
           await setDocumentPlaylistId({ data: doc.data().playlistId });
           await setDocumentUri({ uri: doc.data().uri });
           await setDocumentPlaylistName({ data: doc.data().playlistName });
-          await doc.data().tracks.map(data => {
-            console.log(data);
-          });
-          // sets track uri's if needed:
-          doc.data().tracks.forEach(data => {
+          // await set;
+          // await doc.data().tracks.map(data => {
+          //   console.log(data);
+          // });
+          // there is an excess empty string, within the array, remove it and set DocumentState to the new array of tracks:
+          const trackListData = doc.data().tracks;
+          trackListData.shift();
+          trackListData.forEach(data => {
             playlistArr.push(data);
           });
+          await setDocumentState(playlistArr);
         })
         .catch(err => {
           console.log(err);
         });
-      setDocumentState(playlistArr);
     }
     fetchData();
-  }, [documentPlaylistId, myAccessCode]);
-
-  // useEffect(() => {
-  //   // updates in realtime from firestore
-  //   db.collection('playlists')
-  //     .doc(myAccessCode)
-  //     .onSnapshot(doc => {
-  //       doc.data().tracks.map(data => {
-  //         SpotifyApi.getPlaylistTracks(documentPlaylistId).then(tracks => {
-  //           console.log(tracks);
-  //           // tracks.body.items.map(spotifyApi => {
-  //           // TODO:
-  //           // increment vote count for specific track
-  //           // if (data.trackUri === spotifyApi.track.uri) {
-  //           //   db.doc(`playlists/${accessCode}`).set({
-  //           //   }, { merge: true });
-  //           // }
-  //           // });
-  //         });
-  //       });
-  //     });
-  // }, [documentPlaylistId, myAccessCode]);
-
-  // useEffect(() => {
-  //   SpotifyApi.getPlaylistTracks(documentPlaylistId)
-  //     .then(data => {
-  //       console.log(data.body.items);
-  //       // await setPlaylistUri(uri);
-  //       // await setPlaylistResult(data.body.items);
-  //       // await navigate('/tuneroom');
-  //     })
-  //     .catch(error => {
-  //       return error;
-  //     });
-  // });
+  }, [myAccessCode]);
 
   const [spotifyToken, setSpotifyToken] = useState();
   const [searchQuery, setSearchQuery] = useState({ query: '' });
   const [trackResults, setTrackResults] = useState({
     data: '',
   });
-  const [playlistId, setPlaylistId] = useState({ data: '' });
-  const [playlistQuery, setPlaylistQuery] = useState({ query: '' });
+  // const [playlistId, setPlaylistId] = useState({ data: '' });
+  // const [playlistQuery, setPlaylistQuery] = useState({ query: '' });
   const [spotifyRefreshToken, setSpotifyRefreshToken] = useState({
     expiresIn: '',
   });
   // these should use the data from firestore as a fallback for refresh
-  const [playlistResult, setPlaylistResult] = useState({ data: '' });
+  // const [playlistResult, setPlaylistResult] = useState({ data: '' });
   // const [accessCode, setAccessCode] = useState({ code: '' });
 
   return (
     // inject state into the provider, and pass along to children components
     <SpotifyContext.Provider
       value={{
+        // Firebase related Queries
         documentOwnerId,
-        documentState,
+        setDocumentOwnerId,
         documentUri,
+        setDocumentUri,
         documentPlaylistName,
+        setDocumentPlaylistName,
         documentPlaylistId,
+        setDocumentPlaylistId,
+        documentState,
         setDocumentState,
-        playlistQuery,
-        setPlaylistQuery,
-        playlistResult,
-        playlistId,
-        setPlaylistId,
-        setPlaylistResult,
+        // Spotify Tokens
         spotifyToken,
         setSpotifyToken,
         searchQuery,
         setSearchQuery,
         trackResults,
         setTrackResults,
-        // accessCode,
-        // setAccessCode,
         spotifyRefreshToken,
         setSpotifyRefreshToken,
-        playlistUri,
-        setPlaylistUri,
+        // playlistUri,
+        // setPlaylistUri,
       }}
     >
       {children}

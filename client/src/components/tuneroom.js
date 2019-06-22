@@ -1,4 +1,4 @@
-import React, { useContext, useEffect } from 'react';
+import React, { useState, useContext, useEffect } from 'react';
 import { Link, navigate } from '@reach/router';
 import SpotifyPlayer from 'react-spotify-web-playback';
 import axios from 'axios';
@@ -16,27 +16,20 @@ function TuneRoom() {
   // These four variables need to be fetched in context from the firestore database to persist through page refresh
   const user = JSON.parse(localStorage.getItem('user'));
   const playlistAccessCode = localStorage.getItem('accessCode');
+
+  const [tuneRoomState, setTuneRoomState] = useState([]);
   // const { documentState } = useContext(SpotifyContext);
 
   // context
   // TODO: can this be cleaned up?
   const {
-    documentOwnerId,
     documentUri,
     documentPlaylistName,
-    documentPlaylistId,
     searchQuery,
     setSearchQuery,
     documentState,
-    // accessCode,
     trackResults,
     setTrackResults,
-    // setting to localStorage until context gets refactored to db
-    playlistResult,
-    // setting to localStorage until context gets refactored to db
-    // playlistUri,
-    // setPlaylistResult,
-    // setPlaylistId,
   } = useContext(SpotifyContext);
 
   useEffect(() => {
@@ -71,17 +64,6 @@ function TuneRoom() {
         );
       });
   });
-
-  // useEffect(() => {
-  //   getPlaylistTracks(playlistAccessCode, setPlaylistResult, setPlaylistId);
-  // }, [playlistAccessCode, setPlaylistId, setPlaylistResult]);
-
-  // set the access code here to localStorage to fix tunes going away after page refresh
-  // useEffect(() => {
-  // localStorage.setItem('accessCode', accessCode);
-  // console.log('this is the tuneroom accessCode: ', accessCode);
-  // console.log('this is the playlistResult: ', playlistResult);
-  // }, [playlistResult]);
 
   useEffect(() => {
     // updates in realtime from firestore
@@ -123,33 +105,47 @@ function TuneRoom() {
     });
   }, [setTrackResults]);
 
+  useEffect(() => {
+    // const { trackUri } = documentState;
+    setTuneRoomState(documentState);
+  }, [documentState, playlistAccessCode]);
+
   return (
     <div>
       <button type="submit" onClick={() => navigate('/')}>
         Return to Home
       </button>
       <div>
+        <div>{documentPlaylistName.data}</div>
         <SpotifyPlayer token={user.accessToken} uris={[`${documentUri.uri}`]} />
+        {/* TUNEROOM STATE */}
+        {/* {console.log('TUNEROOM STATE: ', tuneRoomState)} */}
+        {/* {tuneRoomState.map((result, i) => {
+          return <div>{result.trackUri.name}</div>;
+          // console.log(result.trackUri.name)
+        })} */}
         {/** PLAYLSIT RESULTS */}
-        {/* {console.log('playlistResult: ', playlistResult)} */}
-        {playlistResult.data !== '' ? (
-          playlistResult.map((result, i) => (
-            <>
-              {/* what's currently playing? */}
-              {i === 0 && <h2>Currently playing:</h2>}
-              {/* see what's next, add voting feature here? */}
-              {i === 1 && <h2>Up Next:</h2>}
-              <ul key={i}>
-                <li>
-                  <div>{result.track.name}</div>
-                  <img
-                    src={result.track.album.images[2].url}
-                    alt="album-cover"
-                  />
-                </li>
-              </ul>
-            </>
-          ))
+        {documentState !== '' ? (
+          documentState.map((result, i) => {
+            console.log('result', result);
+            const { name } = result.trackUri;
+            console.log('what is this trackUri data: ', name);
+            return (
+              <>
+                {/* what's currently playing? */}
+                {i === 1 && <h2>Currently playing:</h2>}
+                {/* see what's next, add voting feature here? */}
+                {i === 2 && <h2>Up Next:</h2>}
+                <ul key={i}>
+                  <li>
+                    <div>{result.trackUri.name}</div>
+                    {/* Cant parse further down?? */}
+                    {/* <img src={result.album.images[2].url} alt="album-cover" /> */}
+                  </li>
+                </ul>
+              </>
+            );
+          })
         ) : (
           <div>
             <h2>
@@ -157,12 +153,6 @@ function TuneRoom() {
             </h2>
           </div>
         )}
-        <div>documentOwnerId: {documentOwnerId.data}</div>
-        <div>documentPlaylistId: {documentPlaylistId.data}</div>
-        <div>documentPlaylistName: {documentPlaylistName.data}</div>
-        <div>documentUri: {documentUri.uri}</div>
-        {/* <div>documentState: {documentState}</div> */}
-        {console.log(documentState)}
         {/** SEARCH FOR A SONG */}
         <input
           type="text"
@@ -207,13 +197,6 @@ function TuneRoom() {
       ) : (
         <h2>Submit a song!</h2>
       )}
-      {documentState.map(data => (
-        <>
-          {/* <div>{data}</div> */}
-          {console.log(data.trackUri)}
-          <div>song</div>
-        </>
-      ))}
     </div>
   );
 }

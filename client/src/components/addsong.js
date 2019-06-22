@@ -8,12 +8,8 @@ import { SpotifyApi } from '../api/spotify/spotifyConfig';
 
 const AddSong = () => {
   const [stateQuery, setStateQuery] = useState('');
+  const accessCode = localStorage.getItem('accessCode');
   const user = JSON.parse(localStorage.getItem('user'));
-
-  // TODO: Render playlist name in tuneroom...context?
-  // const [playlist, setPlaylistName] = useState({
-  //   playlistName: '',
-  // });
 
   SpotifyApi.setAccessToken(user.accessToken);
   useEffect(() => {
@@ -22,34 +18,15 @@ const AddSong = () => {
     }
   }, [user]);
 
-  const {
-    searchQuery,
-    setSearchQuery,
-    accessCode,
-    setAccessCode,
-    setPlaylistId,
-    setPlaylistUri,
-    trackResults,
-    setTrackResults,
-    setPlaylistResult,
-  } = useContext(SpotifyContext);
+  const { trackResults, setTrackResults } = useContext(SpotifyContext);
 
   const search = e => {
     setStateQuery({ query: e.target.value });
-    // setSearchQuery({ query: e.target.value });
-    // console.log('stateQuery: ', stateQuery);
   };
 
   const handleAddTrack = result => {
     // console.log('accessCode: ', accessCode);
-    addStartingTrack(
-      result,
-      accessCode,
-      setPlaylistUri,
-      setPlaylistResult,
-      setPlaylistId,
-      navigate
-    );
+    addStartingTrack(result, navigate);
   };
 
   const handleCloseSearch = () => {
@@ -65,7 +42,7 @@ const AddSong = () => {
         input.click();
       }
     });
-  }, [setTrackResults, stateQuery]);
+  }, [stateQuery]);
 
   return (
     <>
@@ -105,17 +82,7 @@ const AddSong = () => {
               <li>
                 <img src={result.album.images[2].url} alt="album-cover" />
                 {result.artists[0].name} - {result.name}
-                <button
-                  type="submit"
-                  onClick={() =>
-                    handleAddTrack(
-                      result.uri.toString(),
-                      result.album.images[2].url,
-                      result.artists[0].name,
-                      result.name
-                    )
-                  }
-                >
+                <button type="submit" onClick={() => handleAddTrack(result)}>
                   add
                 </button>
               </li>
