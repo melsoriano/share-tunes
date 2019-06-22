@@ -101,6 +101,7 @@ function getPlaylistTracks(
     // console.log('doc.id', doc.id);
     if (accessCode === doc.id) {
       const { playlistId, ownerId } = doc.data();
+      localStorage.setItem('accessCode', accessCode);
       setPlaylistId(playlistId.toString());
       if (!user) {
         db.doc(`users/${ownerId}`)

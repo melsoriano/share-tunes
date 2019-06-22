@@ -26,15 +26,15 @@ const Join = () => {
   };
 
   // TODO: add these EVERYWHERE...classname?
-  window.addEventListener('keydown', e => {
+  window.addEventListener('keydown', async e => {
     if (e.keyCode === 13) {
+      setAccessCode(accessCode);
       getPlaylistTracks(
         accessCode.code,
         setPlaylistResult,
         setPlaylistId,
         navigate
       );
-      setAccessCode(accessCode.code);
     }
   });
 
