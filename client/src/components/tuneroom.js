@@ -1,4 +1,4 @@
-import React, { useState, useContext, useEffect } from 'react';
+import React, { useContext, useEffect } from 'react';
 import { Link, navigate } from '@reach/router';
 import SpotifyPlayer from 'react-spotify-web-playback';
 import axios from 'axios';
@@ -13,22 +13,30 @@ import { SpotifyApi } from '../api/spotify/spotifyConfig';
 import { db } from '../api/firebase/firebaseConfig';
 
 function TuneRoom() {
+  // These four variables need to be fetched in context from the firestore database to persist through page refresh
   const user = JSON.parse(localStorage.getItem('user'));
   const playlistAccessCode = localStorage.getItem('accessCode');
+  // const { documentState } = useContext(SpotifyContext);
 
   // context
   // TODO: can this be cleaned up?
   const {
+    documentOwnerId,
+    documentUri,
+    documentPlaylistName,
+    documentPlaylistId,
     searchQuery,
     setSearchQuery,
-    accessCode,
-    playlistId,
+    documentState,
+    // accessCode,
     trackResults,
     setTrackResults,
+    // setting to localStorage until context gets refactored to db
     playlistResult,
-    playlistUri,
-    setPlaylistResult,
-    setPlaylistId,
+    // setting to localStorage until context gets refactored to db
+    // playlistUri,
+    // setPlaylistResult,
+    // setPlaylistId,
   } = useContext(SpotifyContext);
 
   useEffect(() => {
@@ -64,37 +72,45 @@ function TuneRoom() {
       });
   });
 
+  // useEffect(() => {
+  //   getPlaylistTracks(playlistAccessCode, setPlaylistResult, setPlaylistId);
+  // }, [playlistAccessCode, setPlaylistId, setPlaylistResult]);
+
+  // set the access code here to localStorage to fix tunes going away after page refresh
+  // useEffect(() => {
+  // localStorage.setItem('accessCode', accessCode);
+  // console.log('this is the tuneroom accessCode: ', accessCode);
+  // console.log('this is the playlistResult: ', playlistResult);
+  // }, [playlistResult]);
+
   useEffect(() => {
-    //  updates in realtime from firestore
-    db.collection('playlists')
-      .doc(accessCode)
-      .onSnapshot(doc => {
-        doc.data().tracks.map(data => {
-          SpotifyApi.getPlaylistTracks(playlistId).then(tracks => {
-            tracks.body.items.map(spotifyApi => {
-              // TODO:
-              // increment vote count for specific track
-              // if (data.trackUri === spotifyApi.track.uri) {
-              //   db.doc(`playlists/${accessCode}`).set({
-              //   }, { merge: true });
-              // }
-            });
-          });
-        });
-      });
-  }, [accessCode, playlistId]);
+    // updates in realtime from firestore
+    // db.collection('playlists')
+    //   .doc(accessCode)
+    //   .onSnapshot(doc => {
+    //     doc.data().tracks.map(data => {
+    //       SpotifyApi.getPlaylistTracks(playlistId).then(tracks => {
+    //         tracks.body.items.map(spotifyApi => {
+    //           // TODO:
+    //           // increment vote count for specific track
+    //           // if (data.trackUri === spotifyApi.track.uri) {
+    //           //   db.doc(`playlists/${accessCode}`).set({
+    //           //   }, { merge: true });
+    //           // }
+    //         });
+    //       });
+    //     });
+    //   });
+  }, []);
 
   const search = e => {
     setSearchQuery({ query: e.target.value });
   };
 
   const handleAddTrack = result => {
+    console.log(result);
     addTrackToPlaylist(result);
   };
-
-  useEffect(() => {
-    getPlaylistTracks(playlistAccessCode, setPlaylistResult, setPlaylistId);
-  }, [accessCode.code, playlistAccessCode, setPlaylistId, setPlaylistResult]);
 
   useEffect(() => {
     const field = document.querySelector('input');
@@ -107,18 +123,15 @@ function TuneRoom() {
     });
   }, [setTrackResults]);
 
-  useEffect(() => {
-    if (window.location.pathname !== '/tuneroom') setTrackResults({ data: '' });
-  }, [setTrackResults]);
-
   return (
     <div>
       <button type="submit" onClick={() => navigate('/')}>
         Return to Home
       </button>
       <div>
-        <SpotifyPlayer token={user.accessToken} uris={[`${playlistUri}`]} />
+        <SpotifyPlayer token={user.accessToken} uris={[`${documentUri.uri}`]} />
         {/** PLAYLSIT RESULTS */}
+        {/* {console.log('playlistResult: ', playlistResult)} */}
         {playlistResult.data !== '' ? (
           playlistResult.map((result, i) => (
             <>
@@ -144,6 +157,12 @@ function TuneRoom() {
             </h2>
           </div>
         )}
+        <div>documentOwnerId: {documentOwnerId.data}</div>
+        <div>documentPlaylistId: {documentPlaylistId.data}</div>
+        <div>documentPlaylistName: {documentPlaylistName.data}</div>
+        <div>documentUri: {documentUri.uri}</div>
+        {/* <div>documentState: {documentState}</div> */}
+        {console.log(documentState)}
         {/** SEARCH FOR A SONG */}
         <input
           type="text"
@@ -188,6 +207,13 @@ function TuneRoom() {
       ) : (
         <h2>Submit a song!</h2>
       )}
+      {documentState.map(data => (
+        <>
+          {/* <div>{data}</div> */}
+          {console.log(data.trackUri)}
+          <div>song</div>
+        </>
+      ))}
     </div>
   );
 }

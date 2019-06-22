@@ -7,12 +7,15 @@ import {
 } from '../firebase/firebaseApi';
 import { db } from '../firebase/firebaseConfig';
 
-function createSpotifyPlaylist(userId, playlistName, setAccessCode, navigate) {
+function createSpotifyPlaylist(userId, playlistName, navigate) {
   const accessCodeId = Math.random()
     .toString(36)
     .substr(2, 4);
 
-  setAccessCode(accessCodeId);
+  // setAccessCode(accessCodeId);
+  // Every time a new playlist is created, set the new accessCode to localStorage
+  // This will trigger an update to spotifyContext
+  localStorage.setItem('accessCode', accessCodeId);
 
   SpotifyApi.createPlaylist(userId, playlistName, {
     public: true,
@@ -66,6 +69,7 @@ function addTrackToPlaylist(trackUri, navigate) {
 function addStartingTrack(
   trackUri,
   accessCode,
+  setPlaylistUri,
   setPlaylistResult,
   setPlaylistId,
   navigate
@@ -73,17 +77,19 @@ function addStartingTrack(
   getPlaylistFromDb(doc => {
     // console.log(accessCode);
     const user = localStorage.getItem('user');
-    const { playlistId, ownerId } = doc.data();
+    const { playlistId, ownerId, uri } = doc.data();
     const accessCodeId = doc.id;
     setPlaylistId(playlistId);
     SpotifyApi.addTracksToPlaylist(playlistId, [trackUri])
       .then(() => {
+        console.log(trackUri);
         addTrackToDb(trackUri, accessCodeId);
       })
       .then(() => {
         SpotifyApi.getPlaylistTracks(playlistId.toString())
           .then(async data => {
             await setPlaylistResult(data.body.items);
+            await setPlaylistUri(uri);
             await navigate('/tuneroom');
           })
           .catch(error => error);
@@ -101,21 +107,21 @@ function getPlaylistTracks(
   setPlaylistId,
   navigate
 ) {
-  // console.log('hitting..');
+  console.log('hitting..');
   getPlaylistFromDb(doc => {
     const user = localStorage.getItem('user');
+    const myAccessCode = localStorage.getItem('accessCode') || 'default';
     // console.log('accessCode: ', accessCode);
     // console.log('doc.id', doc.id);
-    if (accessCode === doc.id) {
+    if (myAccessCode === doc.id) {
       const { playlistId, ownerId, uri } = doc.data();
-      localStorage.setItem('accessCode', accessCode);
-      setPlaylistId(playlistId.toString());
+      // localStorage.setItem('accessCode', accessCode);
+      // setPlaylistId(playlistId.toString());
       if (!user) {
         db.doc(`users/${ownerId}`)
           .get()
           .then(async playlistOwner => {
             const { accessToken, refreshToken, email } = playlistOwner.data();
-
             const unAuthUser = {
               uid: playlistOwner.id,
               email,
@@ -129,7 +135,12 @@ function getPlaylistTracks(
               .then(async data => {
                 await localStorage.setItem('user', JSON.stringify(unAuthUser));
                 await setPlaylistUri(uri);
+                // await localStorage.setItem('playlistUri', uri);
                 await setPlaylistResult(data.body.items);
+                // await localStorage.setItem(
+                //   'playlistResult',
+                //   JSON.stringify(data.body.items)
+                // );
                 await navigate('/tuneroom');
               })
               .catch(error => {

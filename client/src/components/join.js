@@ -1,20 +1,10 @@
-import React, { useContext, useEffect } from 'react';
+import React, { useState, useContext, useEffect } from 'react';
 import { navigate } from '@reach/router';
-import axios from 'axios';
-import { getPlaylistTracks } from '../api/spotify/spotifyApi';
-import { SpotifyContext } from '../context/spotifyContext';
 import { SpotifyApi } from '../api/spotify/spotifyConfig';
 
 const Join = () => {
+  const [searchQuery, setSearchQuery] = useState('');
   const user = JSON.parse(localStorage.getItem('user'));
-
-  const {
-    setPlaylistResult,
-    accessCode,
-    setAccessCode,
-    setPlaylistId,
-    setPlaylistUri,
-  } = useContext(SpotifyContext);
 
   useEffect(() => {
     if (user !== null) {
@@ -23,43 +13,36 @@ const Join = () => {
   }, [user]);
 
   const handleAccessCode = e => {
-    setAccessCode({ code: e.target.value });
+    setSearchQuery({ code: e.target.value });
   };
 
-  // TODO: add these EVERYWHERE...classname?
-  window.addEventListener('keydown', async e => {
-    if (e.keyCode === 13) {
-      setAccessCode(accessCode);
-      getPlaylistTracks(
-        accessCode.code,
-        setPlaylistResult,
-        setPlaylistId,
-        navigate
-      );
-    }
-  });
+  // handler to trigger the same event as the component on enter
+  useEffect(() => {
+    const field = document.querySelector('input');
+    const input = document.querySelectorAll('button')[0];
+    field.addEventListener('keydown', e => {
+      if (e.keyCode === 13) {
+        e.preventDefault();
+        input.click();
+      }
+    });
+  }, []);
 
   return (
     <div>
-      {console.log(accessCode.code)}
       <input
         type="text"
-        value={accessCode.code}
+        value={searchQuery.code}
         onChange={handleAccessCode}
         placeholder="Enter Access Code"
       />
       <button
         type="submit"
         onClick={() => {
-          setAccessCode(accessCode.code);
-          getPlaylistTracks(
-            accessCode.code,
-            setPlaylistUri,
-            accessCode,
-            setPlaylistResult,
-            setPlaylistId,
-            navigate
-          );
+          // set access code to localStorage
+          // this will trigger an update in spotifyContext and persist through refresh
+          localStorage.setItem('accessCode', searchQuery.code);
+          navigate('/tuneroom');
         }}
       >
         ENTER

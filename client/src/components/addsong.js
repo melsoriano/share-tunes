@@ -28,6 +28,7 @@ const AddSong = () => {
     accessCode,
     setAccessCode,
     setPlaylistId,
+    setPlaylistUri,
     trackResults,
     setTrackResults,
     setPlaylistResult,
@@ -40,10 +41,11 @@ const AddSong = () => {
   };
 
   const handleAddTrack = result => {
-    setAccessCode(accessCode);
+    // console.log('accessCode: ', accessCode);
     addStartingTrack(
       result,
       accessCode,
+      setPlaylistUri,
       setPlaylistResult,
       setPlaylistId,
       navigate
@@ -105,7 +107,14 @@ const AddSong = () => {
                 {result.artists[0].name} - {result.name}
                 <button
                   type="submit"
-                  onClick={() => handleAddTrack(result.uri.toString())}
+                  onClick={() =>
+                    handleAddTrack(
+                      result.uri.toString(),
+                      result.album.images[2].url,
+                      result.artists[0].name,
+                      result.name
+                    )
+                  }
                 >
                   add
                 </button>

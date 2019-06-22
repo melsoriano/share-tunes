@@ -14,6 +14,9 @@ function Home() {
 
   const spotifyAuthCode = getUrlParameter('code');
 
+  const { documentState } = useContext(SpotifyContext);
+  console.log(documentState);
+
   // TODO: Render playlist name in tuneroom...context?
   // const [setPlaylistName] = useState({
   //   playlistName: '',
