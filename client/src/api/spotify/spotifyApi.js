@@ -71,6 +71,7 @@ function addStartingTrack(
   navigate
 ) {
   getPlaylistFromDb(doc => {
+    // console.log(accessCode);
     const user = localStorage.getItem('user');
     const { playlistId, ownerId } = doc.data();
     const accessCodeId = doc.id;
@@ -100,10 +101,14 @@ function getPlaylistTracks(
   setPlaylistId,
   navigate
 ) {
+  // console.log('hitting..');
   getPlaylistFromDb(doc => {
     const user = localStorage.getItem('user');
+    // console.log('accessCode: ', accessCode);
+    // console.log('doc.id', doc.id);
     if (accessCode === doc.id) {
       const { playlistId, ownerId, uri } = doc.data();
+      localStorage.setItem('accessCode', accessCode);
       setPlaylistId(playlistId.toString());
       if (!user) {
         db.doc(`users/${ownerId}`)

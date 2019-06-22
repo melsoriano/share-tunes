@@ -1,20 +1,20 @@
-import React, { useContext, useEffect } from 'react';
+import React, { useState, useContext, useEffect } from 'react';
 import { Link, navigate } from '@reach/router';
 import SpotifyPlayer from 'react-spotify-web-playback';
-
 import axios from 'axios';
-import { searchTracks, addTrackToPlaylist } from '../api/spotify/spotifyApi';
+
+import {
+  searchTracks,
+  addTrackToPlaylist,
+  getPlaylistTracks,
+} from '../api/spotify/spotifyApi';
 import { SpotifyContext } from '../context/spotifyContext';
 import { SpotifyApi } from '../api/spotify/spotifyConfig';
 import { db } from '../api/firebase/firebaseConfig';
 
 function TuneRoom() {
   const user = JSON.parse(localStorage.getItem('user'));
-
-  // TODO: Render playlist name in tuneroom...context?
-  // const [playlist, setPlaylistName] = useState({
-  //   playlistName: '',
-  // });
+  const playlistAccessCode = localStorage.getItem('accessCode');
 
   // context
   // TODO: can this be cleaned up?
@@ -27,6 +27,8 @@ function TuneRoom() {
     setTrackResults,
     playlistResult,
     playlistUri,
+    setPlaylistResult,
+    setPlaylistId,
   } = useContext(SpotifyContext);
 
   useEffect(() => {
@@ -90,23 +92,30 @@ function TuneRoom() {
     addTrackToPlaylist(result);
   };
 
-  const handleCloseSearch = () => {
-    setTrackResults({ data: '' });
-  };
+  useEffect(() => {
+    getPlaylistTracks(playlistAccessCode, setPlaylistResult, setPlaylistId);
+  }, [accessCode.code, playlistAccessCode, setPlaylistId, setPlaylistResult]);
+
+  useEffect(() => {
+    const field = document.querySelector('input');
+    const input = document.querySelectorAll('button')[1];
+    field.addEventListener('keydown', e => {
+      if (e.keyCode === 13) {
+        e.preventDefault();
+        input.click();
+      }
+    });
+  }, [setTrackResults]);
+
+  useEffect(() => {
+    if (window.location.pathname !== '/tuneroom') setTrackResults({ data: '' });
+  }, [setTrackResults]);
 
   return (
     <div>
-      {/* TODO: on refresh, this breaks */}
-      {accessCode !== '' ? (
-        <>
-          <h2>
-            Access Code:
-            {/* {accessCode} {console.log(accessCode)} */}
-          </h2>
-        </>
-      ) : (
-        <h2>Access Code Invalid</h2>
-      )}
+      <button type="submit" onClick={() => navigate('/')}>
+        Return to Home
+      </button>
       <div>
         <SpotifyPlayer token={user.accessToken} uris={[`${playlistUri}`]} />
         {/** PLAYLSIT RESULTS */}
@@ -133,7 +142,6 @@ function TuneRoom() {
             <h2>
               <Link to="/home">Join a playlist</Link> to see what's playing
             </h2>
-            <button type="submit" onClick={() => navigate('/home')} />
           </div>
         )}
         {/** SEARCH FOR A SONG */}
@@ -152,7 +160,7 @@ function TuneRoom() {
         {/* CLOSE SEARCH RESULTS */}
         &nbsp;
         {trackResults.data !== '' && (
-          <button type="submit" onClick={() => handleCloseSearch()}>
+          <button type="submit" onClick={() => setTrackResults({ data: '' })}>
             Close Search
           </button>
         )}

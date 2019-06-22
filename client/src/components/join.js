@@ -27,21 +27,21 @@ const Join = () => {
   };
 
   // TODO: add these EVERYWHERE...classname?
-  window.addEventListener('keydown', e => {
+  window.addEventListener('keydown', async e => {
     if (e.keyCode === 13) {
+      setAccessCode(accessCode);
       getPlaylistTracks(
         accessCode.code,
         setPlaylistResult,
         setPlaylistId,
         navigate
       );
-      setAccessCode(accessCode.code);
     }
   });
 
   return (
     <div>
-      {console.log(accessCode)}
+      {console.log(accessCode.code)}
       <input
         type="text"
         value={accessCode.code}
@@ -55,6 +55,7 @@ const Join = () => {
           getPlaylistTracks(
             accessCode.code,
             setPlaylistUri,
+            accessCode,
             setPlaylistResult,
             setPlaylistId,
             navigate

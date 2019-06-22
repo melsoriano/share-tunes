@@ -15,6 +15,7 @@ const Create = () => {
   const { setAccessCode } = useContext(SpotifyContext);
 
   useEffect(() => {
+    localStorage.setItem('isLoading', false);
     if (user !== null) {
       SpotifyApi.setAccessToken(user.accessToken);
     }
@@ -23,6 +24,17 @@ const Create = () => {
   const handlePlaylistName = e => {
     setPlaylistName({ playlistName: e.target.value });
   };
+
+  useEffect(() => {
+    const field = document.querySelector('input');
+    const input = document.querySelector('button');
+    field.addEventListener('keydown', e => {
+      if (e.keyCode === 13) {
+        e.preventDefault();
+        input.click();
+      }
+    });
+  }, []);
 
   return (
     <div>

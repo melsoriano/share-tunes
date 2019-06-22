@@ -1,4 +1,4 @@
-import React, { useContext, useEffect } from 'react';
+import React, { useState, useContext, useEffect } from 'react';
 import { navigate } from '@reach/router';
 
 import { searchTracks, addStartingTrack } from '../api/spotify/spotifyApi';
@@ -7,6 +7,7 @@ import { SpotifyContext } from '../context/spotifyContext';
 import { SpotifyApi } from '../api/spotify/spotifyConfig';
 
 const AddSong = () => {
+  const [stateQuery, setStateQuery] = useState('');
   const user = JSON.parse(localStorage.getItem('user'));
 
   // TODO: Render playlist name in tuneroom...context?
@@ -33,10 +34,13 @@ const AddSong = () => {
   } = useContext(SpotifyContext);
 
   const search = e => {
-    setSearchQuery({ query: e.target.value });
+    setStateQuery({ query: e.target.value });
+    // setSearchQuery({ query: e.target.value });
+    // console.log('stateQuery: ', stateQuery);
   };
 
   const handleAddTrack = result => {
+    setAccessCode(accessCode);
     addStartingTrack(
       result,
       accessCode,
@@ -44,25 +48,39 @@ const AddSong = () => {
       setPlaylistId,
       navigate
     );
-    setAccessCode(accessCode);
   };
 
   const handleCloseSearch = () => {
     setTrackResults({ data: '' });
   };
 
+  useEffect(() => {
+    const field = document.querySelector('input');
+    const input = document.querySelector('button');
+    field.addEventListener('keydown', e => {
+      if (e.keyCode === 13) {
+        e.preventDefault();
+        input.click();
+      }
+    });
+  }, [setTrackResults, stateQuery]);
+
   return (
     <>
       {/** SEARCH FOR A SONG */}
       <input
         type="text"
-        value={searchQuery.query}
+        value={stateQuery.query}
         onChange={search}
         placeholder="Search Tracks"
       />
       <button
+        id="addSong"
         type="submit"
-        onClick={() => searchTracks(searchQuery.query, setTrackResults)}
+        onClick={() => {
+          // console.log(stateQuery.query);
+          searchTracks(stateQuery.query, setTrackResults);
+        }}
       >
         SEARCH
       </button>
@@ -77,6 +95,7 @@ const AddSong = () => {
       <br />
       <div>Add a Song to begin launch your playlist!</div>
       {/** SEARCH RESULTS */}
+      {/* {console.log('trackResults: ', trackResults)} */}
       {trackResults.data !== '' ? (
         trackResults.map((result, i) => (
           <div>

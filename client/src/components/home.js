@@ -5,6 +5,7 @@ import { FirebaseAuth, db } from '../api/firebase/firebaseConfig';
 import { spotifyAuthEndpoint, SpotifyApi } from '../api/spotify/spotifyConfig';
 import { getUrlParameter } from '../utils/helpers';
 import { SpotifyContext } from '../context/spotifyContext';
+import Loader from './loader';
 
 function Home() {
   const user = JSON.parse(localStorage.getItem('user'));
@@ -134,7 +135,10 @@ function Home() {
   return (
     <div>
       {localStorage.getItem('isLoading') === 'true' && (
-        <div>Loading, please wait your turn.........</div>
+        <>
+          <div>Loading, please wait your turn.........</div>
+          <Loader />
+        </>
       )}
       <div>
         Thanks for using ShareTunes. Join a playlist with your access code, or
