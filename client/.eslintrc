@@ -13,7 +13,11 @@
     "import/imports-first": ["error", "absolute-first"],
     "react-hooks/rules-of-hooks": "error",
     "react-hooks/exhaustive-deps": "warn",
-    "react/no-array-index-key": "off"
+    "react/no-array-index-key": "off",
+    "camelcase": [
+      "error",
+      { "ignoreDestructuring": true, "properties": "never" }
+    ]
   },
   "globals": {
     "window": true,

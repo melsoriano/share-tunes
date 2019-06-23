@@ -3,8 +3,11 @@ import { Router, Link } from '@reach/router';
 import { ThemeProvider } from 'styled-components';
 
 import Home from '../components/home';
-import Login from '../components/login';
+// import Login from '../components/login';
+import Join from '../components/join';
+import Create from '../components/create';
 import TuneRoom from '../components/tuneroom';
+import AddSong from '../components/addsong';
 
 import { ThemeContext } from '../context/themeContext';
 
@@ -15,15 +18,18 @@ const ReactRouter = () => {
   return (
     <ThemeProvider theme={mode}>
       <div>
-        <nav>
-          <Link to="/">Login</Link>&nbsp;
-          <Link to="home">Home</Link>&nbsp;
+        {/* <nav>
+          <Link to="/">Home</Link>&nbsp;
+          <Link to="login">Login</Link>&nbsp;
           <Link to="tuneroom">Tuneroom</Link>&nbsp;
         </nav>
-        <hr />
+        <hr /> */}
         <Router>
-          <Login path="/" />
-          <Home path="/home" />
+          <Home path="/" />
+          {/* <Login path="/login" /> */}
+          <Create path="/create" />
+          <Join path="/join" />
+          <AddSong path="/add" />
           <TuneRoom path="/tuneroom" />
         </Router>
       </div>

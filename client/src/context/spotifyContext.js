@@ -1,34 +1,79 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import { db } from '../api/firebase/firebaseConfig';
 
-// create instance of context
 export const SpotifyContext = React.createContext();
 
-// create context provider
 export const SpotifyProvider = ({ children }) => {
-  const [spotifyToken, setSpotifyToken] = useState();
-  const [searchQuery, setSearchQuery] = useState({ query: '' });
-  const [trackResults, setTrackResults] = useState({
+  // ACCESS TOKEN -> set when user joins with an accessCode, or creates a new playlsit, generating an accessCode
+  const myAccessCode = localStorage.getItem('accessCode') || 'default';
+
+  // FIRESTORE DATABASE CONTEXT -> needed to render and play songs
+  const [documentOwnerId, setDocumentOwnerId] = useState({ data: '' });
+  const [documentPlaylistId, setDocumentPlaylistId] = useState({ data: '' });
+  const [documentPlaylistName, setDocumentPlaylistName] = useState({
     data: '',
   });
-  const [playlistQuery, setPlaylistQuery] = useState({ query: '' });
-  const [playlistResult, setPlaylistResult] = useState({ data: '' });
-  const [accessCode, setAccessCode] = useState({ code: '' });
+  const [documentState, setDocumentState] = useState([]); // Document state, an array of upcoming tracks
+  const [documentUri, setDocumentUri] = useState({ uri: '' }); // playlistUri
+
+  // SPOTIFY ACCESS TOKENS -> needed to stay logged in
+  const [spotifyToken, setSpotifyToken] = useState();
+  const [spotifyRefreshToken, setSpotifyRefreshToken] = useState({
+    expiresIn: '',
+  });
+
+  // create a useEffect to fetch playlist from firestore, and set to context, depends on localStorage value, which is set in /join
+  // see cleanup, should run this effect whenever the accessCode gets changed in localStorage
+  useEffect(() => {
+    async function fetchData() {
+      // placeholder array to push tracks into, see below
+      const playlistArr = [];
+      await db
+        .collection('playlists')
+        .doc(myAccessCode)
+        .get()
+        .then(async doc => {
+          if (!doc.exists) {
+            return {};
+          }
+          await setDocumentOwnerId({ data: doc.data().ownerId });
+          await setDocumentPlaylistId({ data: doc.data().playlistId });
+          await setDocumentUri({ uri: doc.data().uri });
+          await setDocumentPlaylistName({ data: doc.data().playlistName });
+          // there is an excess empty string within the array, remove it and set DocumentState to the new array of tracks:
+          const trackListData = doc.data().tracks;
+          trackListData.shift();
+          trackListData.forEach(data => {
+            playlistArr.push(data);
+          });
+          await setDocumentState(playlistArr);
+        })
+        .catch(err => {
+          console.log(err);
+        });
+    }
+    fetchData();
+  }, [myAccessCode]);
+
   return (
-    // inject state into the provider, and pass along to children components
     <SpotifyContext.Provider
       value={{
-        playlistQuery,
-        setPlaylistQuery,
-        playlistResult,
-        setPlaylistResult,
+        // Firebase related datatypes:
+        documentOwnerId,
+        setDocumentOwnerId,
+        documentUri,
+        setDocumentUri,
+        documentPlaylistName,
+        setDocumentPlaylistName,
+        documentPlaylistId,
+        setDocumentPlaylistId,
+        documentState,
+        setDocumentState,
+        // Spotify Tokens:
         spotifyToken,
         setSpotifyToken,
-        searchQuery,
-        setSearchQuery,
-        trackResults,
-        setTrackResults,
-        accessCode,
-        setAccessCode,
+        spotifyRefreshToken,
+        setSpotifyRefreshToken,
       }}
     >
       {children}

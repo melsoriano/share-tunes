@@ -1,90 +1,119 @@
-import React, { useState, useContext, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import { navigate } from '@reach/router';
-
-import {
-  createSpotifyPlaylist,
-  getPlaylistTracks,
-} from '../api/spotify/spotifyApi';
-import { SpotifyContext } from '../context/spotifyContext';
-
-import { SpotifyApi } from '../api/spotify/spotifyConfig';
+import axios from 'axios';
+import { FirebaseAuth, db } from '../api/firebase/firebaseConfig';
+import { spotifyAuthEndpoint, SpotifyApi } from '../api/spotify/spotifyConfig';
+import { getUrlParameter } from '../utils/helpers';
+import Loader from './loader';
 
 function Home() {
-  // state
-  const [playlist, setPlaylistName] = useState({
-    playlistName: '',
-  });
-
-  // context
-  const {
-    playlistQuery,
-    setPlaylistQuery,
-    setPlaylistResult,
-    accessCode,
-    setAccessCode,
-  } = useContext(SpotifyContext);
-  // const { setPlaylistResult } = useContext(SpotifyContext);
-  // const {accessCode, setAccessCode} = useContext(SpotifyContext)
-
-  // localStorage
   const user = JSON.parse(localStorage.getItem('user'));
 
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
+
+  const spotifyAuthCode = getUrlParameter('code');
+
   useEffect(() => {
-    console.log(user);
     if (user !== null) {
       SpotifyApi.setAccessToken(user.accessToken);
     }
   }, [user]);
 
-  // helpers
-  const handlePlaylistName = e => {
-    setPlaylistName({ playlistName: e.target.value });
-  };
+  useEffect(() => {
+    const authListener = () => {
+      FirebaseAuth.onAuthStateChanged(authUser => {
+        if (authUser) {
+          db.doc(`users/${authUser.uid}`)
+            .get()
+            .then(snapshot => {
+              const dbUser = snapshot.data();
+              const userData = {
+                uid: authUser.uid,
+                email: authUser.email,
+                ...dbUser,
+              };
+              localStorage.setItem('user', JSON.stringify(userData));
+            });
+        }
+      });
+    };
 
-  const handlePlaylistQuery = e => {
-    setPlaylistQuery({ playlistQuery: e.target.value });
-  };
+    function getToken() {
+      if (spotifyAuthCode) {
+        axios.post('/auth/token', { spotifyAuthCode }).then(async response => {
+          FirebaseAuth.setPersistence('local').then(async () => {
+            await FirebaseAuth.signInWithCustomToken(
+              response.data.firebaseToken
+            )
+              // isLoading needs further debugging...localStorage is just a temporary thing
+              .then(() => localStorage.setItem('isLoading', 'false'))
+              .then(() => setIsAuthenticated(true))
+              .then(() => navigate('/create'))
+              .catch(error => error);
+          });
+        });
+      }
+    }
 
-  const handleAccessCode = e => {
-    setAccessCode({ code: e.target.value });
-  };
+    authListener();
+    getToken();
+  }, [spotifyAuthCode]);
 
   return (
     <div>
+      {localStorage.getItem('isLoading') === 'true' && (
+        <>
+          <div>Loading, please wait your turn.........</div>
+          <Loader />
+        </>
+      )}
       <div>
-        {/** ADD PLAYLIST */}
-        <input
-          type="text"
-          value={playlist.playlistName}
-          onChange={handlePlaylistName}
-          placeholder="Create A Playlist"
-        />
-        <button
-          type="submit"
-          onClick={() => createSpotifyPlaylist(user.uid, playlist.playlistName)}
-        >
-          CREATE PLAYLIST
-        </button>
+        Thanks for using ShareTunes. Join a playlist with your access code, or
+        create your own!
+      </div>
+      <br />
+      {/* Login to Spotify and Create Playlist */}
+      <div>
+        <div id="login">
+          {/** Leaving this link outside of conditional for testing */}
+          <a href={spotifyAuthEndpoint}>
+            <button
+              type="submit"
+              onClick={() => {
+                localStorage.setItem('isLoading', 'true');
+              }}
+            >
+              CREATE A PLAYLIST
+            </button>
+          </a>
+          <br />
+          <br />
+          {!isAuthenticated ? (
+            <div>
+              To create a new playlist, you will need a Spotify Account.
+            </div>
+          ) : (
+            <div>
+              <h3>
+                YOU ARE AUTHENTICATED! ^o^
+                <br />
+                <br />
+                TO DO:
+                <br />
+                Redirect to playlist page when `isAuthenticated` is true :)
+              </h3>
+            </div>
+          )}
+        </div>
         <br />
-        <br />
-
-        <div>OR</div>
-        <br />
-
-        {/** RETRIEVE A PLAYLIST */}
-        <input
-          type="text"
-          value={accessCode.code}
-          onChange={handleAccessCode}
-          placeholder="Search Playlist"
-        />
+        {/* Join an existing playlist with an access code */}
         <button
           type="submit"
           onClick={() => {
-            getPlaylistTracks(accessCode.code, setPlaylistResult, navigate);
+            navigate('/join');
           }}
         >
-          JOIN PLAYLIST
+          JOIN A PLAYLIST
         </button>
       </div>
       <br />

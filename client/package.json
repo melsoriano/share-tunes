@@ -10,6 +10,7 @@
     "react-async": "^6.2.0",
     "react-dom": "^16.8.6",
     "react-scripts": "3.0.1",
+    "react-spotify-web-playback": "^0.4.0",
     "react-switch": "^5.0.0",
     "spotify-web-api-node": "^4.0.0",
     "styled-components": "^4.3.1"

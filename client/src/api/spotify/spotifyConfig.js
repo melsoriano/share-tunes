@@ -5,14 +5,16 @@ const spotifyConfig = {
   clientSecret: process.env.REACT_APP_SPOTIFY_CLIENT_SECRET,
   redirectUri: process.env.REACT_APP_SPOTIFY_REDIRECT_URI,
   scopes: [
-    'user-read-email',
-    'user-read-private',
-    'user-read-recently-played',
     'playlist-modify-public',
     'playlist-read-collaborative',
+    'streaming',
+    'user-read-email',
+    'user-read-private',
+    'user-read-birthdate',
     'user-read-playback-state',
     'user-modify-playback-state',
     'user-read-currently-playing',
+    'user-read-recently-played',
   ],
 };
 
