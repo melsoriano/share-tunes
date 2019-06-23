@@ -1,8 +1,7 @@
-import React, { useState, useContext, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import { navigate } from '@reach/router';
 
 import { createSpotifyPlaylist } from '../api/spotify/spotifyApi';
-import { SpotifyContext } from '../context/spotifyContext';
 import { SpotifyApi } from '../api/spotify/spotifyConfig';
 
 const Create = () => {
@@ -11,8 +10,6 @@ const Create = () => {
   const [playlist, setPlaylistName] = useState({
     playlistName: '',
   });
-
-  // const { setAccessCode } = useContext(SpotifyContext);
 
   useEffect(() => {
     localStorage.setItem('isLoading', false);
@@ -47,12 +44,7 @@ const Create = () => {
       <button
         type="submit"
         onClick={() =>
-          createSpotifyPlaylist(
-            user.uid,
-            playlist.playlistName,
-            // setAccessCode,
-            navigate
-          )
+          createSpotifyPlaylist(user.uid, playlist.playlistName, navigate)
         }
       >
         CREATE PLAYLIST

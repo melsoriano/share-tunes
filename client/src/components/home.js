@@ -14,14 +14,6 @@ function Home() {
 
   const spotifyAuthCode = getUrlParameter('code');
 
-  const { documentState } = useContext(SpotifyContext);
-  console.log(documentState);
-
-  // TODO: Render playlist name in tuneroom...context?
-  // const [setPlaylistName] = useState({
-  //   playlistName: '',
-  // });
-
   useEffect(() => {
     if (user !== null) {
       SpotifyApi.setAccessToken(user.accessToken);
@@ -54,6 +46,7 @@ function Home() {
             await FirebaseAuth.signInWithCustomToken(
               response.data.firebaseToken
             )
+              // isLoading needs further debugging...localStorage is just a temporary thing
               .then(() => localStorage.setItem('isLoading', 'false'))
               .then(() => setIsAuthenticated(true))
               .then(() => navigate('/create'))

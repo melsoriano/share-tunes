@@ -1,18 +1,14 @@
 import { SpotifyApi } from './spotifyConfig';
-
 import {
   addNewPlaylistToDb,
   getPlaylistFromDb,
   addTrackToDb,
 } from '../firebase/firebaseApi';
-import { db } from '../firebase/firebaseConfig';
 
 function createSpotifyPlaylist(userId, playlistName, navigate) {
   const accessCodeId = Math.random()
     .toString(36)
     .substr(2, 4);
-
-  // setAccessCode(accessCodeId);
   // Every time a new playlist is created, set the new accessCode to localStorage
   // This will trigger an update to spotifyContext
   localStorage.setItem('accessCode', accessCodeId);
@@ -48,7 +44,6 @@ function searchTracks(query, setTrackResults) {
     });
 }
 
-// TODO: refactor to have data save to context for real time updates on the front end
 function addTrackToPlaylist(trackUri, navigate) {
   getPlaylistFromDb(doc => {
     const { playlistId } = doc.data();
@@ -86,71 +81,6 @@ function addStartingTrack(trackUri, navigate) {
   });
 }
 
-function getPlaylistTracks(
-  accessCode,
-  setPlaylistUri,
-  setPlaylistResult,
-  setPlaylistId,
-  navigate
-) {
-  console.log('hitting..');
-  getPlaylistFromDb(doc => {
-    const user = localStorage.getItem('user');
-    const myAccessCode = localStorage.getItem('accessCode') || 'default';
-    // console.log('accessCode: ', accessCode);
-    // console.log('doc.id', doc.id);
-    if (myAccessCode === doc.id) {
-      const { playlistId, ownerId, uri } = doc.data();
-      // localStorage.setItem('accessCode', accessCode);
-      // setPlaylistId(playlistId.toString());
-      if (!user) {
-        db.doc(`users/${ownerId}`)
-          .get()
-          .then(async playlistOwner => {
-            const { accessToken, refreshToken, email } = playlistOwner.data();
-            const unAuthUser = {
-              uid: playlistOwner.id,
-              email,
-              accessToken,
-              refreshToken,
-              playlistId,
-              uri,
-            };
-            SpotifyApi.setAccessToken(accessToken);
-            SpotifyApi.getPlaylistTracks(playlistId.toString())
-              .then(async data => {
-                await localStorage.setItem('user', JSON.stringify(unAuthUser));
-                await setPlaylistUri(uri);
-                // await localStorage.setItem('playlistUri', uri);
-                await setPlaylistResult(data.body.items);
-                // await localStorage.setItem(
-                //   'playlistResult',
-                //   JSON.stringify(data.body.items)
-                // );
-                await navigate('/tuneroom');
-              })
-              .catch(error => {
-                return error;
-              });
-          });
-      } else {
-        SpotifyApi.getPlaylistTracks(playlistId.toString())
-          .then(async data => {
-            await setPlaylistUri(uri);
-            await setPlaylistResult(data.body.items);
-            await navigate('/tuneroom');
-          })
-          .catch(error => {
-            return error;
-          });
-      }
-    } else {
-      console.log('access code not valid');
-      return 'access code not valid';
-    }
-  });
-}
-
 function playTrack(playlistId) {
   // REMOVE HARD CODE!!!
 
@@ -181,12 +111,76 @@ function pauseTrack() {
     });
 }
 
+// function getPlaylistTracks(
+//   accessCode,
+//   setPlaylistUri,
+//   setPlaylistResult,
+//   setPlaylistId,
+//   navigate
+// ) {
+//   console.log('hitting..');
+//   getPlaylistFromDb(doc => {
+//     const user = localStorage.getItem('user');
+//     const myAccessCode = localStorage.getItem('accessCode') || 'default';
+//     // console.log('accessCode: ', accessCode);
+//     // console.log('doc.id', doc.id);
+//     if (myAccessCode === doc.id) {
+//       const { playlistId, ownerId, uri } = doc.data();
+//       // localStorage.setItem('accessCode', accessCode);
+//       // setPlaylistId(playlistId.toString());
+//       if (!user) {
+//         db.doc(`users/${ownerId}`)
+//           .get()
+//           .then(async playlistOwner => {
+//             const { accessToken, refreshToken, email } = playlistOwner.data();
+//             const unAuthUser = {
+//               uid: playlistOwner.id,
+//               email,
+//               accessToken,
+//               refreshToken,
+//               playlistId,
+//               uri,
+//             };
+//             SpotifyApi.setAccessToken(accessToken);
+//             SpotifyApi.getPlaylistTracks(playlistId.toString())
+//               .then(async data => {
+//                 await localStorage.setItem('user', JSON.stringify(unAuthUser));
+//                 await setPlaylistUri(uri);
+//                 // await localStorage.setItem('playlistUri', uri);
+//                 await setPlaylistResult(data.body.items);
+//                 // await localStorage.setItem(
+//                 //   'playlistResult',
+//                 //   JSON.stringify(data.body.items)
+//                 // );
+//                 await navigate('/tuneroom');
+//               })
+//               .catch(error => {
+//                 return error;
+//               });
+//           });
+//       } else {
+//         SpotifyApi.getPlaylistTracks(playlistId.toString())
+//           .then(async data => {
+//             await setPlaylistUri(uri);
+//             await setPlaylistResult(data.body.items);
+//             await navigate('/tuneroom');
+//           })
+//           .catch(error => {
+//             return error;
+//           });
+//       }
+//     } else {
+//       console.log('access code not valid');
+//       return 'access code not valid';
+//     }
+//   });
+// }
+
 export {
   createSpotifyPlaylist,
   searchTracks,
   addTrackToPlaylist,
   addStartingTrack,
-  getPlaylistTracks,
   playTrack,
   pauseTrack,
 };

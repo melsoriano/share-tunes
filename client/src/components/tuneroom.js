@@ -3,34 +3,25 @@ import { Link, navigate } from '@reach/router';
 import SpotifyPlayer from 'react-spotify-web-playback';
 import axios from 'axios';
 
-import {
-  searchTracks,
-  addTrackToPlaylist,
-  getPlaylistTracks,
-} from '../api/spotify/spotifyApi';
 import { SpotifyContext } from '../context/spotifyContext';
 import { SpotifyApi } from '../api/spotify/spotifyConfig';
 import { db } from '../api/firebase/firebaseConfig';
 
+import AddSong from './addsong';
+
 function TuneRoom() {
-  // These four variables need to be fetched in context from the firestore database to persist through page refresh
+  // USER
   const user = JSON.parse(localStorage.getItem('user'));
-  const playlistAccessCode = localStorage.getItem('accessCode');
 
-  const [tuneRoomState, setTuneRoomState] = useState([]);
-  // const { documentState } = useContext(SpotifyContext);
+  // CONTEXT -> These variables need to be fetched in context from the firestore database to persist through page refresh
+  const { documentUri, documentPlaylistName, documentState } = useContext(
+    SpotifyContext
+  );
 
-  // context
-  // TODO: can this be cleaned up?
-  const {
-    documentUri,
-    documentPlaylistName,
-    searchQuery,
-    setSearchQuery,
-    documentState,
-    trackResults,
-    setTrackResults,
-  } = useContext(SpotifyContext);
+  // STATE -> keeping this in state rather than context closes the search results on a reroute
+  const [trackResults, setTrackResults] = useState({
+    data: '',
+  });
 
   useEffect(() => {
     function getRefreshToken() {
@@ -85,31 +76,6 @@ function TuneRoom() {
     //   });
   }, []);
 
-  const search = e => {
-    setSearchQuery({ query: e.target.value });
-  };
-
-  const handleAddTrack = result => {
-    console.log(result);
-    addTrackToPlaylist(result);
-  };
-
-  useEffect(() => {
-    const field = document.querySelector('input');
-    const input = document.querySelectorAll('button')[1];
-    field.addEventListener('keydown', e => {
-      if (e.keyCode === 13) {
-        e.preventDefault();
-        input.click();
-      }
-    });
-  }, [setTrackResults]);
-
-  useEffect(() => {
-    // const { trackUri } = documentState;
-    setTuneRoomState(documentState);
-  }, [documentState, playlistAccessCode]);
-
   return (
     <div>
       <button type="submit" onClick={() => navigate('/')}>
@@ -118,24 +84,13 @@ function TuneRoom() {
       <div>
         <div>{documentPlaylistName.data}</div>
         <SpotifyPlayer token={user.accessToken} uris={[`${documentUri.uri}`]} />
-        {/* TUNEROOM STATE */}
-        {/* {console.log('TUNEROOM STATE: ', tuneRoomState)} */}
-        {/* {tuneRoomState.map((result, i) => {
-          return <div>{result.trackUri.name}</div>;
-          // console.log(result.trackUri.name)
-        })} */}
         {/** PLAYLSIT RESULTS */}
         {documentState !== '' ? (
           documentState.map((result, i) => {
-            console.log('result', result);
-            const { name } = result.trackUri;
-            console.log('what is this trackUri data: ', name);
             return (
               <>
                 {/* what's currently playing? */}
-                {i === 1 && <h2>Currently playing:</h2>}
-                {/* see what's next, add voting feature here? */}
-                {i === 2 && <h2>Up Next:</h2>}
+                {i === 1 && <h2>Up Next:</h2>}
                 <ul key={i}>
                   <li>
                     <div>{result.trackUri.name}</div>
@@ -149,24 +104,11 @@ function TuneRoom() {
         ) : (
           <div>
             <h2>
-              <Link to="/home">Join a playlist</Link> to see what's playing
+              <Link to="/join">Join a playlist</Link> to see what's playing
             </h2>
           </div>
         )}
-        {/** SEARCH FOR A SONG */}
-        <input
-          type="text"
-          value={searchQuery.query}
-          onChange={search}
-          placeholder="Search Tracks"
-        />
-        <button
-          type="submit"
-          onClick={() => searchTracks(searchQuery.query, setTrackResults)}
-        >
-          SEARCH
-        </button>
-        {/* CLOSE SEARCH RESULTS */}
+        <AddSong />
         &nbsp;
         {trackResults.data !== '' && (
           <button type="submit" onClick={() => setTrackResults({ data: '' })}>
@@ -175,28 +117,6 @@ function TuneRoom() {
         )}
         <br />
       </div>
-
-      {/** SEARCH RESULTS */}
-      {trackResults.data !== '' ? (
-        trackResults.map((result, i) => (
-          <div>
-            <ul key={i}>
-              <li>
-                <img src={result.album.images[2].url} alt="album-cover" />
-                {result.artists[0].name} - {result.name}
-                <button
-                  type="submit"
-                  onClick={() => handleAddTrack(result.uri.toString())}
-                >
-                  add
-                </button>
-              </li>
-            </ul>
-          </div>
-        ))
-      ) : (
-        <h2>Submit a song!</h2>
-      )}
     </div>
   );
 }

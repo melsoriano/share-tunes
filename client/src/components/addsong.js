@@ -1,15 +1,17 @@
-import React, { useState, useContext, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import { navigate } from '@reach/router';
 
 import { searchTracks, addStartingTrack } from '../api/spotify/spotifyApi';
-import { SpotifyContext } from '../context/spotifyContext';
 
 import { SpotifyApi } from '../api/spotify/spotifyConfig';
 
 const AddSong = () => {
   const [stateQuery, setStateQuery] = useState('');
-  const accessCode = localStorage.getItem('accessCode');
   const user = JSON.parse(localStorage.getItem('user'));
+
+  const [trackResults, setTrackResults] = useState({
+    data: '',
+  });
 
   SpotifyApi.setAccessToken(user.accessToken);
   useEffect(() => {
@@ -18,14 +20,11 @@ const AddSong = () => {
     }
   }, [user]);
 
-  const { trackResults, setTrackResults } = useContext(SpotifyContext);
-
   const search = e => {
     setStateQuery({ query: e.target.value });
   };
 
   const handleAddTrack = result => {
-    // console.log('accessCode: ', accessCode);
     addStartingTrack(result, navigate);
   };
 
@@ -57,14 +56,12 @@ const AddSong = () => {
         id="addSong"
         type="submit"
         onClick={() => {
-          // console.log(stateQuery.query);
           searchTracks(stateQuery.query, setTrackResults);
         }}
       >
         SEARCH
       </button>
       {/* CLOSE SEARCH RESULTS */}
-      {/* TODO: Automatically close search results on redirect */}
       &nbsp;
       {trackResults.data !== '' && (
         <button type="submit" onClick={() => handleCloseSearch()}>
@@ -72,9 +69,12 @@ const AddSong = () => {
         </button>
       )}
       <br />
-      <div>Add a Song to begin launch your playlist!</div>
+      {window.location.pathname === '/tuneroom' ? (
+        <div>Add a song to the list!</div>
+      ) : (
+        <div>Add a Song to begin launch your playlist!</div>
+      )}
       {/** SEARCH RESULTS */}
-      {/* {console.log('trackResults: ', trackResults)} */}
       {trackResults.data !== '' ? (
         trackResults.map((result, i) => (
           <div>
