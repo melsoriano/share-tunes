@@ -1,14 +1,12 @@
-import React, { useContext, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import { navigate } from '@reach/router';
 import styled from 'styled-components';
-import { getPlaylistTracks } from '../api/spotify/spotifyApi';
-import { SpotifyContext } from '../context/spotifyContext';
 import { SpotifyApi } from '../api/spotify/spotifyConfig';
-import { theme, mixins, media } from '../styles';
+import { theme, mixins, Section } from '../styles';
 
-const { colors, fontSizes, fonts } = theme;
+const { fontSizes } = theme;
 
-const JoinContainer = styled.div`
+const JoinContainer = styled(Section)`
   display: flex;
   flex-flow: column wrap;
   justify-content: center;
@@ -66,15 +64,8 @@ const JoinInputLabel = styled.label`
 `;
 
 const Join = () => {
+  const [searchQuery, setSearchQuery] = useState({ code: '' });
   const user = JSON.parse(localStorage.getItem('user'));
-
-  const {
-    setPlaylistResult,
-    accessCode,
-    setAccessCode,
-    setPlaylistId,
-    setPlaylistUri,
-  } = useContext(SpotifyContext);
 
   useEffect(() => {
     if (user !== null) {
@@ -83,28 +74,24 @@ const Join = () => {
   }, [user]);
 
   const handleAccessCode = e => {
-    setAccessCode({ code: e.target.value });
+    setSearchQuery({ code: e.target.value });
   };
 
-  // TODO: add these EVERYWHERE...classname?
-  window.addEventListener('keydown', e => {
-    if (e.keyCode === 13) {
-      getPlaylistTracks(
-        accessCode.code,
-        setPlaylistResult,
-        setPlaylistId,
-        navigate
-      );
-      setAccessCode(accessCode.code);
+  const handleKeyPress = e => {
+    if (e.key === 'Enter') {
+      setSearchQuery({ code: e.target.value });
+      localStorage.setItem('accessCode', searchQuery.code);
+      navigate('/tuneroom');
     }
-  });
+  };
 
   return (
     <JoinContainer>
       <JoinFieldSet className="join-field">
         <JoinInputField
           type="text"
-          value={accessCode.code}
+          value={searchQuery.code}
+          onKeyPress={handleKeyPress}
           onChange={handleAccessCode}
           required
         />
@@ -113,14 +100,10 @@ const Join = () => {
       <JoinButton
         type="submit"
         onClick={() => {
-          setAccessCode(accessCode.code);
-          getPlaylistTracks(
-            accessCode.code,
-            setPlaylistUri,
-            setPlaylistResult,
-            setPlaylistId,
-            navigate
-          );
+          // set access code to localStorage
+          // this will trigger an update in spotifyContext and persist through refresh
+          localStorage.setItem('accessCode', searchQuery.code);
+          navigate('/tuneroom');
         }}
       >
         ENTER

@@ -1,7 +1,7 @@
 // create two themes
 // theme object gets passed into themeContext, which toggles between the two based on localStorage value
 const theme = {
-  colors: {
+  colorOptions: {
     darkest: '#101015',
     dark: '#101015',
     ice: '#F0F3F4',

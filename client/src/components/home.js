@@ -1,14 +1,15 @@
-import React, { useState, useEffect } from 'react';
+import React, { Fragment, useState, useEffect } from 'react';
 import { navigate } from '@reach/router';
 import axios from 'axios';
 import styled, { keyframes } from 'styled-components';
 import { FirebaseAuth, db } from '../api/firebase/firebaseConfig';
 import { spotifyAuthEndpoint, SpotifyApi } from '../api/spotify/spotifyConfig';
 import { getUrlParameter } from '../utils/helpers';
-import { theme, media, mixins } from '../styles';
+import { theme, media, mixins, Section } from '../styles';
 import { IconMusicNote } from './icons';
+import Loader from './loader';
 
-const { colors, fonts, fontSizes } = theme;
+const { colorOptions, fonts, fontSizes } = theme;
 
 const grow = keyframes`
   0% {
@@ -75,12 +76,13 @@ const CircleAnimation = styled.div`
   svg {
     width: 60px;
     height: 60px;
-    color: ${colors.darkest};
+    color: ${colorOptions.darkest};
   }
 `;
 
-const HomeContainer = styled.div`
+const HomeContainer = styled(Section)`
   margin: auto;
+  text-align: center;
 `;
 
 const Share = styled.h1`
@@ -131,6 +133,18 @@ const HomepageButton = styled.button`
   cursor: pointer;
 `;
 
+const LoaderContainer = styled.div`
+  display: flex;
+  flex-flow: column wrap;
+  justify-content: center;
+  align-items: center;
+  background: ${props => props.theme.colors.backgroundColor};
+`;
+
+const Authenticating = styled.p`
+  font-size: ${fontSizes.medium};
+`;
+
 function Home() {
   const user = JSON.parse(localStorage.getItem('user'));
   const [isAuthenticated, setIsAuthenticated] = useState(false);
@@ -143,9 +157,26 @@ function Home() {
   }, [user]);
 
   useEffect(() => {
+    function getToken() {
+      if (spotifyAuthCode) {
+        axios.post('/auth/token', { spotifyAuthCode }).then(async response => {
+          FirebaseAuth.setPersistence('local').then(async () => {
+            await FirebaseAuth.signInWithCustomToken(
+              response.data.firebaseToken
+            )
+              // isLoading needs further debugging...localStorage is just a temporary thing
+              .then(() => localStorage.setItem('isLoading', 'false'))
+              .then(() => setIsAuthenticated(true))
+              .catch(error => error);
+          });
+        });
+      }
+    }
+
     const authListener = () => {
       FirebaseAuth.onAuthStateChanged(authUser => {
         if (authUser) {
+          setIsAuthenticated(true);
           db.doc(`users/${authUser.uid}`)
             .get()
             .then(snapshot => {
@@ -161,64 +192,76 @@ function Home() {
       });
     };
 
-    function getToken() {
-      if (spotifyAuthCode) {
-        axios.post('/auth/token', { spotifyAuthCode }).then(async response => {
-          FirebaseAuth.setPersistence('local').then(async () => {
-            await FirebaseAuth.signInWithCustomToken(
-              response.data.firebaseToken
-            )
-              .then(() => localStorage.setItem('isLoading', 'false'))
-              .then(() => setIsAuthenticated(true))
-              .then(() => navigate('/create'))
-              .catch(error => error);
-          });
-        });
-      }
-    }
-
-    authListener();
     getToken();
+    authListener();
   }, [spotifyAuthCode]);
 
-  return (
-    <HomeContainer>
-      <CircleAnimation>
-        <IconMusicNote></IconMusicNote>
-      </CircleAnimation>
-      <Share>Share</Share>
-      <Tunes>Tunes</Tunes>
-      <Subtitle>
-        Have great taste in music? Share and vote for your favorite tunes in a
-        real-time collaborative playlist.
-      </Subtitle>
-      <ButtonContainer className="__BTN__">
+  const renderNav = () => {
+    return !isAuthenticated ? (
+      <Fragment>
         <a href={spotifyAuthEndpoint}>
+          <HomepageButton
+            onClick={() => localStorage.setItem('isLoading', 'true')}
+          >
+            Login with Spotify
+          </HomepageButton>
+        </a>
+        <SmallNotice>
+          * A Spotify account is required. Sign up{' '}
+          <SpotifySignUpLink href="https://www.spotify.com" target="_blank">
+            here
+          </SpotifySignUpLink>
+          .
+        </SmallNotice>
+      </Fragment>
+    ) : (
+      <Fragment>
+        <ButtonContainer className="__BTN__">
           <HomepageButton
             type="submit"
             onClick={() => {
-              localStorage.setItem('isLoading', 'true');
+              navigate('/create');
             }}
           >
             CREATE A PLAYLIST
           </HomepageButton>
-        </a>
-        <HomepageButton
-          type="submit"
-          onClick={() => {
-            navigate('/join');
-          }}
-        >
-          JOIN A PLAYLIST
-        </HomepageButton>
-      </ButtonContainer>
-      <SmallNotice>
-        * A Spotify account is required. Sign up{' '}
-        <SpotifySignUpLink href="https://www.spotify.com">
-          here
-        </SpotifySignUpLink>
-        .
-      </SmallNotice>
+
+          <HomepageButton
+            type="submit"
+            onClick={() => {
+              navigate('/join');
+            }}
+          >
+            JOIN A PLAYLIST
+          </HomepageButton>
+        </ButtonContainer>
+      </Fragment>
+    );
+  };
+
+  return (
+    <HomeContainer>
+      <Fragment>
+        <CircleAnimation>
+          <IconMusicNote></IconMusicNote>
+        </CircleAnimation>
+        <Share>Share</Share>
+        <Tunes>Tunes</Tunes>
+        <Subtitle>
+          Have great taste in music? Share and vote for your favorite tunes in a
+          real-time collaborative playlist.
+        </Subtitle>
+      </Fragment>
+      {localStorage.getItem('isLoading') === 'true' ? (
+        <Fragment>
+          <LoaderContainer>
+            <Authenticating>Logging in...</Authenticating>
+            <Loader />
+          </LoaderContainer>
+        </Fragment>
+      ) : (
+        renderNav()
+      )}
     </HomeContainer>
   );
 }

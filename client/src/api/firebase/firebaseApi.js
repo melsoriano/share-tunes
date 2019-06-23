@@ -30,6 +30,7 @@ function getPlaylistFromDb(next) {
       });
     })
     .catch(error => {
+      console.log(error);
       return error;
     });
 }

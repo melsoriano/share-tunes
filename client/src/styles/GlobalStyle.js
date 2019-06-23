@@ -68,7 +68,6 @@ font-style:normal;font-weight:300;
   }
 
   body {
-    text-align: center;
     margin: 0;
     width: 100%;
     min-height: 100%;
@@ -117,6 +116,12 @@ font-style:normal;font-weight:300;
     height: 100%;
     fill: currentColor;
     vertical-align: middle;
+  }
+
+  ul, ol {
+    padding: 0;
+    margin: 0;
+    list-style: none;
   }
 
 `;

@@ -4,7 +4,7 @@ import { ThemeContext } from '../context/themeContext';
 import theme from '../styles/theme';
 import { IconMoon, IconSun } from './icons';
 
-const { colors } = theme;
+const { colorOptions } = theme;
 
 const ToggleSwitch = () => {
   // import context and assign
@@ -29,8 +29,8 @@ const ToggleSwitch = () => {
     <Switch
       checked={switchState}
       onChange={() => (switchState ? setSwitch(false) : setSwitch(true))}
-      onColor={`${colors.aqua}`}
-      offColor={`${colors.coral}`}
+      onColor={`${colorOptions.aqua}`}
+      offColor={`${colorOptions.coral}`}
       handleDiameter={16}
       uncheckedIcon={
         <div

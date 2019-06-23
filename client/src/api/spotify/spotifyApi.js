@@ -1,18 +1,17 @@
 import { SpotifyApi } from './spotifyConfig';
-
 import {
   addNewPlaylistToDb,
   getPlaylistFromDb,
   addTrackToDb,
 } from '../firebase/firebaseApi';
-import { db } from '../firebase/firebaseConfig';
 
-function createSpotifyPlaylist(userId, playlistName, setAccessCode, navigate) {
+function createSpotifyPlaylist(userId, playlistName, navigate) {
   const accessCodeId = Math.random()
     .toString(36)
     .substr(2, 4);
-
-  setAccessCode(accessCodeId);
+  // Every time a new playlist is created, set the new accessCode to localStorage
+  // This will trigger an update to spotifyContext
+  localStorage.setItem('accessCode', accessCodeId);
 
   SpotifyApi.createPlaylist(userId, playlistName, {
     public: true,
@@ -45,7 +44,6 @@ function searchTracks(query, setTrackResults) {
     });
 }
 
-// TODO: refactor to have data save to context for real time updates on the front end
 function addTrackToPlaylist(trackUri, navigate) {
   getPlaylistFromDb(doc => {
     const { playlistId } = doc.data();
@@ -63,88 +61,22 @@ function addTrackToPlaylist(trackUri, navigate) {
 }
 
 // Add initial track after playlist creation
-function addStartingTrack(
-  trackUri,
-  accessCode,
-  setPlaylistResult,
-  setPlaylistId,
-  navigate
-) {
+function addStartingTrack(trackUri, navigate) {
   getPlaylistFromDb(doc => {
-    const user = localStorage.getItem('user');
-    const { playlistId, ownerId } = doc.data();
-    const accessCodeId = doc.id;
-    setPlaylistId(playlistId);
-    SpotifyApi.addTracksToPlaylist(playlistId, [trackUri])
-      .then(() => {
-        addTrackToDb(trackUri, accessCodeId);
-      })
-      .then(() => {
-        SpotifyApi.getPlaylistTracks(playlistId.toString())
-          .then(async data => {
-            await setPlaylistResult(data.body.items);
-            await navigate('/tuneroom');
-          })
-          .catch(error => error);
-      })
-      .catch(error => {
-        return error;
-      });
-  });
-}
-
-function getPlaylistTracks(
-  accessCode,
-  setPlaylistUri,
-  setPlaylistResult,
-  setPlaylistId,
-  navigate
-) {
-  getPlaylistFromDb(doc => {
-    const user = localStorage.getItem('user');
-    if (accessCode === doc.id) {
-      const { playlistId, ownerId, uri } = doc.data();
-      setPlaylistId(playlistId.toString());
-      if (!user) {
-        db.doc(`users/${ownerId}`)
-          .get()
-          .then(async playlistOwner => {
-            const { accessToken, refreshToken, email } = playlistOwner.data();
-
-            const unAuthUser = {
-              uid: playlistOwner.id,
-              email,
-              accessToken,
-              refreshToken,
-              playlistId,
-              uri,
-            };
-            SpotifyApi.setAccessToken(accessToken);
-            SpotifyApi.getPlaylistTracks(playlistId.toString())
-              .then(async data => {
-                await localStorage.setItem('user', JSON.stringify(unAuthUser));
-                await setPlaylistUri(uri);
-                await setPlaylistResult(data.body.items);
-                await navigate('/tuneroom');
-              })
-              .catch(error => {
-                return error;
-              });
-          });
-      } else {
-        SpotifyApi.getPlaylistTracks(playlistId.toString())
-          .then(async data => {
-            await setPlaylistUri(uri);
-            await setPlaylistResult(data.body.items);
-            await navigate('/tuneroom');
-          })
-          .catch(error => {
-            return error;
-          });
-      }
-    } else {
-      console.log('access code not valid');
-      return 'access code not valid';
+    // check localStorage for current access code and match to get the correct playlist from db
+    const accessCodeId = localStorage.getItem('accessCode');
+    if (doc.id === accessCodeId) {
+      const { playlistId } = doc.data();
+      SpotifyApi.addTracksToPlaylist(playlistId, [trackUri.uri])
+        .then(() => {
+          addTrackToDb(trackUri, accessCodeId);
+        })
+        .then(() => {
+          SpotifyApi.getPlaylistTracks(playlistId).then(navigate('/tuneroom'));
+        })
+        .catch(error => {
+          return error;
+        });
     }
   });
 }
@@ -184,7 +116,6 @@ export {
   searchTracks,
   addTrackToPlaylist,
   addStartingTrack,
-  getPlaylistTracks,
   playTrack,
   pauseTrack,
 };
