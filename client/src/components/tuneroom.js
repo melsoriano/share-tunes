@@ -10,15 +10,12 @@ import { db } from '../api/firebase/firebaseConfig';
 import AddSong from './addsong';
 
 function TuneRoom() {
-  // USER
   const user = JSON.parse(localStorage.getItem('user'));
 
-  // CONTEXT -> These variables need to be fetched in context from the firestore database to persist through page refresh
   const { documentUri, documentPlaylistName, documentState } = useContext(
     SpotifyContext
   );
 
-  // STATE -> keeping this in state rather than context closes the search results on a reroute
   const [trackResults, setTrackResults] = useState({
     data: '',
   });
@@ -87,6 +84,7 @@ function TuneRoom() {
         {/** PLAYLSIT RESULTS */}
         {documentState !== '' ? (
           documentState.map((result, i) => {
+            // console.log(result.trackUri.album.images[0].url);
             return (
               <>
                 {/* what's currently playing? */}

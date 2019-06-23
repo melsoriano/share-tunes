@@ -1,10 +1,9 @@
-import React, { useState, useContext, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import { navigate } from '@reach/router';
 import axios from 'axios';
 import { FirebaseAuth, db } from '../api/firebase/firebaseConfig';
 import { spotifyAuthEndpoint, SpotifyApi } from '../api/spotify/spotifyConfig';
 import { getUrlParameter } from '../utils/helpers';
-import { SpotifyContext } from '../context/spotifyContext';
 import Loader from './loader';
 
 function Home() {
@@ -59,74 +58,6 @@ function Home() {
     authListener();
     getToken();
   }, [spotifyAuthCode]);
-
-  // useEffect(() => {
-  //   let tokenExpirationEpoch;
-
-  //   tokenExpirationEpoch = new Date().getTime() / 1000 + accessCodeExpiration;
-
-  //   db.collection('users')
-  //     .get()
-  //     .then(querySnapshot => {
-  //       querySnapshot.forEach(doc => {
-  //         console.log(doc.data());
-  //       });
-  //     });
-
-  //   console.log(
-  //     `Retrieved token. It expires in ${Math.floor(
-  //       tokenExpirationEpoch - new Date().getTime() / 1000
-  //     )} seconds!`
-  //   );
-  //   setInterval(() => {
-  //     console.log(
-  //       `Time left: ${Math.floor(
-  //         tokenExpirationEpoch - new Date().getTime() / 1000
-  //       )} seconds left!`
-  //     );
-
-  //     // OK, we need to refresh the token. Stop printing and refresh.
-  //     if (
-  //       `${Math.floor(tokenExpirationEpoch - new Date().getTime() / 1000)}` <
-  //       1000
-  //     ) {
-  //       clearInterval(this);
-
-  //       // Refresh token and print the new time to expiration.
-  //       SpotifyApi.refreshAccessToken().then(
-  //         async refreshData => {
-  //           const {
-  //             access_token,
-  //             refresh_token,
-  //             expires_in,
-  //           } = refreshData.body;
-
-  //           tokenExpirationEpoch =
-  //             new Date().getTime() / 1000 + refreshData.body.expires_in;
-
-  //           console.log(
-  //             `Refreshed token. It now expires in ${Math.floor(
-  //               tokenExpirationEpoch - new Date().getTime() / 1000
-  //             )} seconds!`
-  //           );
-  //           await setAccessCodeExpiration(refreshData.body.expires_in);
-
-  //           await db.doc(`users/${user.uid}`).set(
-  //             {
-  //               access_token,
-  //               refresh_token,
-  //               expires_in,
-  //             },
-  //             { merge: true }
-  //           );
-  //         },
-  //         err => {
-  //           console.log('Could not refresh the token!', err.message);
-  //         }
-  //       );
-  //     }
-  //   }, 100000);
-  // }, [accessCodeExpiration, setAccessCodeExpiration, user.uid]);
 
   return (
     <div>

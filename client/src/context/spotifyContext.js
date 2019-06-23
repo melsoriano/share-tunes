@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { db } from '../api/firebase/firebaseConfig';
 
-// create instance of context
 export const SpotifyContext = React.createContext();
 
 export const SpotifyProvider = ({ children }) => {
