@@ -14,7 +14,6 @@ function addNewPlaylistToDb(
       playlistId,
       playlistName,
       uri,
-      tracks: [{ trackUri: '' }],
     },
     { merge: true }
   );
@@ -35,17 +34,28 @@ function getPlaylistFromDb(next) {
     });
 }
 
-function addTrackToDb(trackUri, accessCodeId) {
-  console.log('access code id>>', accessCodeId);
-  db.doc(`playlists/${accessCodeId}`)
-    .update({
-      tracks: firebase.firestore.FieldValue.arrayUnion({
-        trackUri,
-      }),
-    })
-    .catch(error => {
-      return error;
+function addTrackToDb(track, accessCodeId) {
+  const playlistRef = db.doc(`playlists/${accessCodeId}`);
+  playlistRef
+    .collection('tracks')
+    .doc(track.uri)
+    .set({
+      ...track,
     });
 }
 
-export { addNewPlaylistToDb, getPlaylistFromDb, addTrackToDb };
+function vote(trackUri, accessCode, documentState) {
+  const index = documentState.findIndex(item => item.uri === trackUri);
+  const playlistRef = db.doc(`playlists/${accessCode}`);
+  if (index) {
+    playlistRef
+      .collection('tracks')
+      .doc(trackUri)
+      .set(
+        { votes: firebase.firestore.FieldValue.increment(1) },
+        { merge: true }
+      );
+  }
+}
+
+export { addNewPlaylistToDb, getPlaylistFromDb, addTrackToDb, vote };

@@ -14,7 +14,8 @@ function createSpotifyPlaylist(userId, playlistName, navigate) {
   localStorage.setItem('accessCode', accessCodeId);
 
   SpotifyApi.createPlaylist(userId, playlistName, {
-    public: true,
+    public: false,
+    collaborative: true,
   })
     .then(async data => {
       const playlistId = data.body.id;
@@ -44,14 +45,14 @@ function searchTracks(query, setTrackResults) {
     });
 }
 
-function addTrackToPlaylist(trackUri, navigate) {
+function addTrackToPlaylist(track, navigate) {
   getPlaylistFromDb(doc => {
     const { playlistId } = doc.data();
     const accessCodeId = doc.id;
 
-    SpotifyApi.addTracksToPlaylist(playlistId, [trackUri])
+    SpotifyApi.addTracksToPlaylist(playlistId, [track])
       .then(() => {
-        addTrackToDb(trackUri, accessCodeId);
+        addTrackToDb(track, accessCodeId);
         navigate('./home');
       })
       .catch(error => {
@@ -61,15 +62,15 @@ function addTrackToPlaylist(trackUri, navigate) {
 }
 
 // Add initial track after playlist creation
-function addStartingTrack(trackUri, navigate) {
+function addStartingTrack(track, navigate) {
   getPlaylistFromDb(doc => {
     // check localStorage for current access code and match to get the correct playlist from db
     const accessCodeId = localStorage.getItem('accessCode');
     if (doc.id === accessCodeId) {
       const { playlistId } = doc.data();
-      SpotifyApi.addTracksToPlaylist(playlistId, [trackUri.uri])
+      SpotifyApi.addTracksToPlaylist(playlistId, [track.uri])
         .then(() => {
-          addTrackToDb(trackUri, accessCodeId);
+          addTrackToDb(track, accessCodeId);
         })
         .then(() => {
           SpotifyApi.getPlaylistTracks(playlistId).then(navigate('/tuneroom'));
