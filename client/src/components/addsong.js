@@ -93,13 +93,13 @@ const AddButton = styled.button`
   color: ${props => props.theme.colors.buttonFill};
 `;
 
-const AddSong = () => {
+const AddSong = props => {
   const [stateQuery, setStateQuery] = useState('');
   const user = JSON.parse(localStorage.getItem('user'));
-
   const [trackResults, setTrackResults] = useState({
     data: '',
   });
+  const { path } = props;
 
   SpotifyApi.setAccessToken(user.accessToken);
   useEffect(() => {
@@ -125,7 +125,10 @@ const AddSong = () => {
 
   return (
     <AddContainer>
-      <AddTrackTitle>Add a song to launch your playlist!</AddTrackTitle>
+      {path === '/add' && (
+        <AddTrackTitle>Add a song to launch your playlist!</AddTrackTitle>
+      )}
+
       {/** SEARCH FOR A SONG */}
       <AddFieldSet>
         <AddInputField

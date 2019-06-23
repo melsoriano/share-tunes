@@ -77,11 +77,11 @@ const Join = () => {
     setSearchQuery({ code: e.target.value });
   };
 
-  const handleKeyPress = e => {
+  const handleKeyPress = async e => {
     if (e.key === 'Enter') {
-      setSearchQuery({ code: e.target.value });
-      localStorage.setItem('accessCode', searchQuery.code);
-      navigate('/tuneroom');
+      await setSearchQuery({ code: e.target.value });
+      await localStorage.setItem('accessCode', searchQuery.code);
+      await navigate('/tuneroom');
     }
   };
 
@@ -99,11 +99,11 @@ const Join = () => {
       </JoinFieldSet>
       <JoinButton
         type="submit"
-        onClick={() => {
+        onClick={async () => {
           // set access code to localStorage
           // this will trigger an update in spotifyContext and persist through refresh
-          localStorage.setItem('accessCode', searchQuery.code);
-          navigate('/tuneroom');
+          await localStorage.setItem('accessCode', searchQuery.code);
+          await navigate('/tuneroom');
         }}
       >
         ENTER
