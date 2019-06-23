@@ -6,7 +6,9 @@ const spotifyConfig = {
   redirectUri: process.env.REACT_APP_SPOTIFY_REDIRECT_URI,
   scopes: [
     'playlist-modify-public',
+    'playlist-modify-private',
     'playlist-read-collaborative',
+    'playlist-read-private',
     'streaming',
     'user-read-email',
     'user-read-private',

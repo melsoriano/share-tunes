@@ -28,9 +28,8 @@ export const SpotifyProvider = ({ children }) => {
     async function fetchData() {
       // placeholder array to push tracks into, see below
       const playlistArr = [];
-      await db
-        .collection('playlists')
-        .doc(myAccessCode)
+      const playlistRef = db.doc(`playlists/${myAccessCode}`);
+      playlistRef
         .get()
         .then(async doc => {
           if (!doc.exists) {
@@ -41,11 +40,21 @@ export const SpotifyProvider = ({ children }) => {
           await setDocumentUri({ uri: doc.data().uri });
           await setDocumentPlaylistName({ data: doc.data().playlistName });
           // there is an excess empty string within the array, remove it and set DocumentState to the new array of tracks:
-          const trackListData = doc.data().tracks;
-          trackListData.shift();
-          trackListData.forEach(data => {
-            playlistArr.push(data);
-          });
+          // const trackListData = doc.data().tracks;
+          // trackListData.shift();
+          // trackListData.forEach(data => {
+          //   playlistArr.push(data);
+          // });
+          // await setDocumentState(playlistArr);
+
+          await playlistRef
+            .collection('tracks')
+            .get()
+            .then(item => {
+              item.docs.map(track => {
+                playlistArr.push(track.data());
+              });
+            });
           await setDocumentState(playlistArr);
         })
         .catch(err => {

@@ -1,12 +1,14 @@
-import React, { useState, useContext, useEffect } from 'react';
+import React, { useState, useContext, useEffect, useRef } from 'react';
 import { Link, navigate } from '@reach/router';
 import SpotifyPlayer from 'react-spotify-web-playback';
 import axios from 'axios';
 import styled from 'styled-components';
 
+import * as firebase from 'firebase';
 import { SpotifyContext } from '../context/spotifyContext';
 import { SpotifyApi } from '../api/spotify/spotifyConfig';
 import { db } from '../api/firebase/firebaseConfig';
+import { vote } from '../api/firebase/firebaseApi';
 
 import AddSong from './addsong';
 
@@ -19,6 +21,7 @@ const PlayerContainer = styled.div`
 
 function TuneRoom() {
   const user = JSON.parse(localStorage.getItem('user'));
+  const accessCode = localStorage.getItem('accessCode');
 
   const { documentUri, documentPlaylistName, documentState } = useContext(
     SpotifyContext
@@ -27,6 +30,15 @@ function TuneRoom() {
   const [trackResults, setTrackResults] = useState({
     data: '',
   });
+
+  const voteResults = useRef({
+    user: '',
+    tracksVoted: [],
+  });
+
+  const handleVote = trackUri => {
+    return vote(trackUri, accessCode, documentState);
+  };
 
   useEffect(() => {
     function getRefreshToken() {
@@ -42,7 +54,7 @@ function TuneRoom() {
           return err;
         });
     }
-    getRefreshToken();
+    // getRefreshToken();
     setInterval(() => {
       getRefreshToken();
     }, 3000000);
@@ -61,38 +73,36 @@ function TuneRoom() {
       });
   });
 
-  useEffect(() => {
-    // updates in realtime from firestore
-    // db.collection('playlists')
-    //   .doc(accessCode)
-    //   .onSnapshot(doc => {
-    //     doc.data().tracks.map(data => {
-    //       SpotifyApi.getPlaylistTracks(playlistId).then(tracks => {
-    //         tracks.body.items.map(spotifyApi => {
-    //           // TODO:
-    //           // increment vote count for specific track
-    //           // if (data.trackUri === spotifyApi.track.uri) {
-    //           //   db.doc(`playlists/${accessCode}`).set({
-    //           //   }, { merge: true });
-    //           // }
-    //         });
-    //       });
-    //     });
-    //   });
-  }, []);
+  // useEffect(() => {
+  // updates in realtime from firestore
+  // db.collection('playlists')
+  //   .doc(accessCode)
+  //   .onSnapshot(doc => {
+  //     doc.data().tracks.map(data => {
+  //       SpotifyApi.getPlaylistTracks(playlistId).then(tracks => {
+  //         tracks.body.items.map(spotifyApi => {
+  //           // TODO:
+  //           // increment vote count for specific track
+  //           // if (data.trackUri === spotifyApi.track.uri) {
+  //           //   db.doc(`playlists/${accessCode}`).set({
+  //           //   }, { merge: true });
+  //           // }
+  //         });
+  //       });
+  //     });
+  //   });
+  // }, []);
 
   return (
     <div>
+      {voteResults.current.tracksVoted}
       <button type="submit" onClick={() => navigate('/')}>
         Return to Home
       </button>
       <div>
         <div>{documentPlaylistName.data}</div>
         <PlayerContainer>
-          <SpotifyPlayer
-            token={user.accessToken}
-            uris={[`${documentUri.uri}`]}
-          />
+          <SpotifyPlayer token={user.accessToken} uris={`${documentUri.uri}`} />
         </PlayerContainer>
         {/** PLAYLSIT RESULTS */}
         {documentState !== '' ? (
@@ -104,7 +114,13 @@ function TuneRoom() {
                 {i === 1 && <h2>Up Next:</h2>}
                 <ul key={i}>
                   <li>
-                    <div>{result.trackUri.name}</div>
+                    <div>{result.name}</div>
+                    <button
+                      type="submit"
+                      onClick={() => handleVote(result.uri)}
+                    >
+                      vote
+                    </button>
                     {/* Cant parse further down?? */}
                     {/* <img src={result.album.images[2].url} alt="album-cover" /> */}
                   </li>
