@@ -2,12 +2,20 @@ import React, { useState, useContext, useEffect } from 'react';
 import { Link, navigate } from '@reach/router';
 import SpotifyPlayer from 'react-spotify-web-playback';
 import axios from 'axios';
+import styled from 'styled-components';
 
 import { SpotifyContext } from '../context/spotifyContext';
 import { SpotifyApi } from '../api/spotify/spotifyConfig';
 import { db } from '../api/firebase/firebaseConfig';
 
 import AddSong from './addsong';
+
+const PlayerContainer = styled.div`
+  svg {
+    width: 25px;
+    height: 25px;
+  }
+`;
 
 function TuneRoom() {
   const user = JSON.parse(localStorage.getItem('user'));
@@ -80,7 +88,12 @@ function TuneRoom() {
       </button>
       <div>
         <div>{documentPlaylistName.data}</div>
-        <SpotifyPlayer token={user.accessToken} uris={[`${documentUri.uri}`]} />
+        <PlayerContainer>
+          <SpotifyPlayer
+            token={user.accessToken}
+            uris={[`${documentUri.uri}`]}
+          />
+        </PlayerContainer>
         {/** PLAYLSIT RESULTS */}
         {documentState !== '' ? (
           documentState.map((result, i) => {

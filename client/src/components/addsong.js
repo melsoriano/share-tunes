@@ -1,9 +1,97 @@
 import React, { useState, useEffect } from 'react';
 import { navigate } from '@reach/router';
-
+import styled from 'styled-components';
 import { searchTracks, addStartingTrack } from '../api/spotify/spotifyApi';
-
 import { SpotifyApi } from '../api/spotify/spotifyConfig';
+import { theme, mixins } from '../styles';
+
+const { fontSizes, fonts } = theme;
+
+const AddContainer = styled.div`
+  display: flex;
+  flex-flow: column wrap;
+  justify-content: center;
+  align-items: center;
+`;
+
+const SearchButton = styled.button`
+  ${mixins.customButton};
+`;
+
+const AddFieldSet = styled.fieldset`
+  position: relative;
+  padding: 0;
+  margin: 5px;
+  border: none;
+  overflow: visible;
+`;
+
+const AddInputField = styled.input`
+  background: transparent;
+  color: ${props => props.theme.colors.fontColor};
+  box-sizing: border-box;
+  width: 280px;
+  padding: 12px;
+  margin-bottom: 20px;
+  border: none;
+  border-radius: 0;
+  box-shadow: none;
+  border-bottom: 1px solid ${props => props.theme.colors.fontColor};
+  font-size: ${fontSizes.xlarge};
+  font-weight: 600;
+  outline: none;
+  cursor: text;
+  transition: all 300ms ease;
+  &:focus {
+    border-bottom: 1px solid ${props => props.theme.colors.buttonFill};
+    box-shadow: 0 1px 0 0 ${props => props.theme.colors.buttonFill};
+  }
+  &:focus ~ label,
+  &:valid ~ label {
+    color: ${props => props.theme.colors.buttonFill};
+    transform: translateY(-14px) scale(0.8);
+  }
+`;
+
+const AddInputLabel = styled.label`
+  position: absolute;
+  top: 10px;
+  left: 10px;
+  font-size: ${fontSizes.large};
+  color: ${props => props.theme.colors.fontColor};
+  transform-origin: 0 -150%;
+  transition: transform 300ms ease;
+  pointer-events: none;
+`;
+
+const AddTrackTitle = styled.h2`
+  font-size: ${fontSizes.xlarge};
+  font-weight: 500;
+  color: ${props => props.theme.colors.buttonFill};
+  margin-bottom: 40px;
+`;
+
+const SearchResultsContainer = styled.div`
+  display: flex;
+  flex-flow: column wrap;
+  justify-content: flex-start;
+  align-items: flex-start;
+`;
+
+const UnorderedList = styled.ul`
+  text-align: left;
+`;
+
+const ListItem = styled.li`
+  text-align: left;
+`;
+
+const AddButton = styled.button`
+  background: transparent;
+  border: 1px solid ${props => props.theme.colors.buttonFill};
+  border-radius: 255px;
+  color: ${props => props.theme.colors.buttonFill};
+`;
 
 const AddSong = () => {
   const [stateQuery, setStateQuery] = useState('');
@@ -26,33 +114,30 @@ const AddSong = () => {
 
   const handleAddTrack = result => {
     addStartingTrack(result, navigate);
-  };
-
-  const handleCloseSearch = () => {
     setTrackResults({ data: '' });
   };
 
-  useEffect(() => {
-    const field = document.querySelector('input');
-    const input = document.querySelector('button');
-    field.addEventListener('keydown', e => {
-      if (e.keyCode === 13) {
-        e.preventDefault();
-        input.click();
-      }
-    });
-  }, [stateQuery]);
+  const handleKeyPress = e => {
+    if (e.key === 'Enter') {
+      searchTracks(stateQuery.query, setTrackResults);
+    }
+  };
 
   return (
-    <>
+    <AddContainer>
+      <AddTrackTitle>Add a song to launch your playlist!</AddTrackTitle>
       {/** SEARCH FOR A SONG */}
-      <input
-        type="text"
-        value={stateQuery.query}
-        onChange={search}
-        placeholder="Search Tracks"
-      />
-      <button
+      <AddFieldSet>
+        <AddInputField
+          type="text"
+          value={stateQuery.query}
+          onKeyPress={handleKeyPress}
+          onChange={search}
+          required
+        />
+        <AddInputLabel>Search Tracks</AddInputLabel>
+      </AddFieldSet>
+      <SearchButton
         id="addSong"
         type="submit"
         onClick={() => {
@@ -60,39 +145,22 @@ const AddSong = () => {
         }}
       >
         SEARCH
-      </button>
-      {/* CLOSE SEARCH RESULTS */}
-      &nbsp;
-      {trackResults.data !== '' && (
-        <button type="submit" onClick={() => handleCloseSearch()}>
-          Close Search
-        </button>
-      )}
-      <br />
-      {window.location.pathname === '/tuneroom' ? (
-        <div>Add a song to the list!</div>
-      ) : (
-        <div>Add a Song to begin launch your playlist!</div>
-      )}
-      {/** SEARCH RESULTS */}
-      {trackResults.data !== '' ? (
+      </SearchButton>
+      {trackResults.data !== '' &&
         trackResults.map((result, i) => (
-          <div>
-            <ul key={i}>
-              <li>
+          <SearchResultsContainer>
+            <UnorderedList key={i}>
+              <ListItem>
                 <img src={result.album.images[2].url} alt="album-cover" />
                 {result.artists[0].name} - {result.name}
-                <button type="submit" onClick={() => handleAddTrack(result)}>
+                <AddButton type="submit" onClick={() => handleAddTrack(result)}>
                   add
-                </button>
-              </li>
-            </ul>
-          </div>
-        ))
-      ) : (
-        <h2>Submit a song!</h2>
-      )}
-    </>
+                </AddButton>
+              </ListItem>
+            </UnorderedList>
+          </SearchResultsContainer>
+        ))}
+    </AddContainer>
   );
 };
 

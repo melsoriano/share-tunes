@@ -1,107 +1,57 @@
 import React from 'react';
+import styled, { keyframes } from 'styled-components';
 
-// https://samherbert.net/svg-loaders/
+const loading = keyframes`
+  0% {
+	  transform: scale(1);
+	  background-color: ${props => props.theme.colors.buttonFill};
+	}
+	20% {
+	  transform: scale(1, 2.2);
+	  background-color: #FFF;
+	}
+	40% {
+	  transform: scale(1);
+	  background-color: ${props => props.theme.colors.buttonFill};
+	}
+`;
+
+const LoaderContainter = styled.div`
+  div:nth-child(1) {
+    animation-delay: 0;
+  }
+  div:nth-child(2) {
+    animation-delay: 0.09s;
+  }
+  div:nth-child(3) {
+    animation-delay: 0.18s;
+  }
+  div:nth-child(4) {
+    animation-delay: 0.27s;
+  }
+  div:nth-child(5) {
+    animation-delay: 0.36s;
+  }
+`;
+
+const LoaderBars = styled.div`
+  display: inline-block;
+  margin: 1.5px;
+  width: 5px;
+  height: 25px;
+  border-radius: 4px;
+  animation: ${loading} 1.5s ease-in-out infinite;
+  background-color: ${props => props.theme.colors.buttonFill};
+`;
 
 const Loader = () => (
-  // {
-  // style = {},
-  // className = '',
-  // fill = '#49c',
-  // width = '45',
-  // height = '45',
-  // viewBox = '0 0 45 45',
-  // }
-  <svg
-    width="58"
-    height="58"
-    viewBox="0 0 58 58"
-    xmlns="http://www.w3.org/2000/svg"
-  >
-    <g fill="#49c" fillRule="evenodd">
-      <g transform="translate(2 1)" stroke="#FFF" strokeWidth="1.5">
-        <circle cx="42.601" cy="11.462" r="5" fillOpacity="1" fill="#49c">
-          <animate
-            attributeName="fill-opacity"
-            begin="0s"
-            dur="1.3s"
-            values="1;0;0;0;0;0;0;0"
-            calcMode="linear"
-            repeatCount="indefinite"
-          />
-        </circle>
-        <circle cx="49.063" cy="27.063" r="5" fillOpacity="0" fill="#49c">
-          <animate
-            attributeName="fill-opacity"
-            begin="0s"
-            dur="1.3s"
-            values="0;1;0;0;0;0;0;0"
-            calcMode="linear"
-            repeatCount="indefinite"
-          />
-        </circle>
-        <circle cx="42.601" cy="42.663" r="5" fillOpacity="0" fill="#49c">
-          <animate
-            attributeName="fill-opacity"
-            begin="0s"
-            dur="1.3s"
-            values="0;0;1;0;0;0;0;0"
-            calcMode="linear"
-            repeatCount="indefinite"
-          />
-        </circle>
-        <circle cx="27" cy="49.125" r="5" fillOpacity="0" fill="#49c">
-          <animate
-            attributeName="fill-opacity"
-            begin="0s"
-            dur="1.3s"
-            values="0;0;0;1;0;0;0;0"
-            calcMode="linear"
-            repeatCount="indefinite"
-          />
-        </circle>
-        <circle cx="11.399" cy="42.663" r="5" fillOpacity="0" fill="#49c">
-          <animate
-            attributeName="fill-opacity"
-            begin="0s"
-            dur="1.3s"
-            values="0;0;0;0;1;0;0;0"
-            calcMode="linear"
-            repeatCount="indefinite"
-          />
-        </circle>
-        <circle cx="4.938" cy="27.063" r="5" fillOpacity="0" fill="#49c">
-          <animate
-            attributeName="fill-opacity"
-            begin="0s"
-            dur="1.3s"
-            values="0;0;0;0;0;1;0;0"
-            calcMode="linear"
-            repeatCount="indefinite"
-          />
-        </circle>
-        <circle cx="11.399" cy="11.462" r="5" fillOpacity="0" fill="#49c">
-          <animate
-            attributeName="fill-opacity"
-            begin="0s"
-            dur="1.3s"
-            values="0;0;0;0;0;0;1;0"
-            calcMode="linear"
-            repeatCount="indefinite"
-          />
-        </circle>
-        <circle cx="27" cy="5" r="5" fillOpacity="0" fill="#49c">
-          <animate
-            attributeName="fill-opacity"
-            begin="0s"
-            dur="1.3s"
-            values="0;0;0;0;0;0;0;1"
-            calcMode="linear"
-            repeatCount="indefinite"
-          />
-        </circle>
-      </g>
-    </g>
-  </svg>
+  <LoaderContainter>
+    <LoaderBars />
+    <LoaderBars />
+    <LoaderBars />
+    <LoaderBars />
+    <LoaderBars />
+  </LoaderContainter>
 );
 
 export default Loader;

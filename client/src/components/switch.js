@@ -2,11 +2,14 @@ import React, { useEffect, useContext } from 'react';
 import Switch from 'react-switch';
 import { ThemeContext } from '../context/themeContext';
 import theme from '../styles/theme';
+import { IconMoon, IconSun } from './icons';
 
-const ThemeSwitch = () => {
+const { colorOptions } = theme;
+
+const ToggleSwitch = () => {
   // import context and assign
-  let { setMode } = useContext(ThemeContext);
-  let { switchState, setSwitch } = useContext(ThemeContext);
+  const { setMode } = useContext(ThemeContext);
+  const { switchState, setSwitch } = useContext(ThemeContext);
 
   // on state change, modify context
   useEffect(() => {
@@ -22,28 +25,47 @@ const ThemeSwitch = () => {
     }
   });
 
-  // api: https://www.npmjs.com/package/react-switch
   return (
-    <label>
-      <Switch
-        checked={switchState}
-        onChange={() => {
-          switchState ? setSwitch(false) : setSwitch(true);
-        }}
-        onColor="#86d3ff"
-        onHandleColor="#2693e6"
-        handleDiameter={30}
-        uncheckedIcon={false}
-        checkedIcon={false}
-        boxShadow="0px 1px 5px rgba(0, 0, 0, 0.6)"
-        activeBoxShadow="0px 0px 1px 10px rgba(0, 0, 0, 0.2)"
-        height={20}
-        width={48}
-        className="react-switch"
-        id="material-switch"
-      />
-    </label>
+    <Switch
+      checked={switchState}
+      onChange={() => (switchState ? setSwitch(false) : setSwitch(true))}
+      onColor={`${colorOptions.aqua}`}
+      offColor={`${colorOptions.coral}`}
+      handleDiameter={16}
+      uncheckedIcon={
+        <div
+          style={{
+            display: 'flex',
+            justifyContent: 'center',
+            alignItems: 'center',
+            height: '100%',
+            paddingRight: 2,
+          }}
+        >
+          <IconMoon />
+        </div>
+      }
+      checkedIcon={
+        <div
+          style={{
+            display: 'flex',
+            justifyContent: 'center',
+            alignItems: 'center',
+            height: '100%',
+            paddingRight: 2,
+          }}
+        >
+          <IconSun />
+        </div>
+      }
+      boxShadow="0px 1px 5px rgba(0, 0, 0, 0.6)"
+      activeBoxShadow="0px 0px 1px 10px rgba(0, 0, 0, 0.2)"
+      height={22}
+      width={50}
+      className="react-switch"
+      id="small-radius-switch"
+    />
   );
 };
 
-export default ThemeSwitch;
+export default ToggleSwitch;
