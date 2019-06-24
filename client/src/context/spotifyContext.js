@@ -25,7 +25,6 @@ export const SpotifyProvider = ({ children }) => {
   useEffect(() => {
     setMyAccessCode(localStorage.getItem('accessCode'));
     async function fetchData() {
-      // let playlistArr = [];
       const playlistRef = db.doc(`playlists/${myAccessCode}`);
       playlistRef
         .get()
