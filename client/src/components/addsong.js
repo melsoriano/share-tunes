@@ -6,7 +6,7 @@ import { SpotifyApi } from '../api/spotify/spotifyConfig';
 import { SpotifyContext } from '../context/spotifyContext';
 import { theme, mixins } from '../styles';
 
-const { fontSizes, fonts } = theme;
+const { fontSizes } = theme;
 
 const AddContainer = styled.div`
   display: flex;

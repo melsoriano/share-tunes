@@ -47,6 +47,7 @@ export const SpotifyProvider = ({ children }) => {
           await setDocumentPlaylistId({ data: doc.data().playlistId });
           await setDocumentUri({ uri: doc.data().uri });
           await setDocumentPlaylistName({ data: doc.data().playlistName });
+
           await playlistRef
             .collection('tracks')
             .get()

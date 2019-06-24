@@ -3,11 +3,11 @@ import { navigate } from '@reach/router';
 import styled from 'styled-components';
 import { createSpotifyPlaylist } from '../api/spotify/spotifyApi';
 import { SpotifyApi } from '../api/spotify/spotifyConfig';
-import { theme, mixins } from '../styles';
+import { theme, mixins, Section } from '../styles';
 
 const { fontSizes } = theme;
 
-const CreateContainer = styled.div`
+const CreateContainer = styled(Section)`
   display: flex;
   flex-flow: column wrap;
   justify-content: center;

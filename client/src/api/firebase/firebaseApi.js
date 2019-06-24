@@ -44,18 +44,14 @@ function addTrackToDb(track, accessCodeId) {
     });
 }
 
-function vote(trackUri, accessCode, documentState) {
-  const index = documentState.findIndex(item => item.uri === trackUri);
-  const playlistRef = db.doc(`playlists/${accessCode}`);
-  if (index) {
-    playlistRef
-      .collection('tracks')
-      .doc(trackUri)
-      .set(
-        { votes: firebase.firestore.FieldValue.increment(1) },
-        { merge: true }
-      );
-  }
+function vote(trackUri, accessCode) {
+  db.doc(`playlists/${accessCode}`)
+    .collection('tracks')
+    .doc(trackUri)
+    .set(
+      { votes: firebase.firestore.FieldValue.increment(1) },
+      { merge: true }
+    );
 }
 
 export { addNewPlaylistToDb, getPlaylistFromDb, addTrackToDb, vote };

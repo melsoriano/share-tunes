@@ -1,22 +1,55 @@
-import React, { useState, useContext, useEffect, useRef } from 'react';
-import { Link, navigate } from '@reach/router';
+import React, { useState, useContext, useEffect, Fragment } from 'react';
+import { Link } from '@reach/router';
 import SpotifyPlayer from 'react-spotify-web-playback';
 import axios from 'axios';
 import styled from 'styled-components';
-
-import * as firebase from 'firebase';
 import { SpotifyContext } from '../context/spotifyContext';
 import { SpotifyApi } from '../api/spotify/spotifyConfig';
 import { db } from '../api/firebase/firebaseConfig';
 import { vote } from '../api/firebase/firebaseApi';
+import { theme, mixins } from '../styles';
 
 import AddSong from './addsong';
+
+const { fonts, fontSizes, colors } = theme;
+
+const TuneRoomContainer = styled.div`
+  ${mixins.sidePadding};
+`;
+
+const PlaylistName = styled.h2`
+  text-align: center;
+  font-size: ${fontSizes.h2};
+  text-transform: uppercase;
+  font-weight: 600;
+  color: ${props => props.theme.colors.buttonFill};
+`;
 
 const PlayerContainer = styled.div`
   svg {
     width: 25px;
     height: 25px;
   }
+`;
+
+const TrackInfoContainer = styled.div`
+  display: flex;
+  flex-flow: row wrap;
+  justify-content: space-between;
+  align-items: center;
+  text-align: left;
+`;
+
+const TrackImageContainer = styled.image`
+  padding: 5px;
+`;
+
+const TrackTextContainer = styled.div`
+  text-align: left;
+`;
+
+const TrackText = styled.p`
+  text-align: left;
 `;
 
 function TuneRoom() {
@@ -42,23 +75,18 @@ function TuneRoom() {
     data: '',
   });
 
-  const voteResults = useRef({
-    user: '',
-    tracksVoted: [],
-  });
-
-  const handleVote = trackUri => {
-    return vote(trackUri, accessCode, documentState);
-  };
+  const [votedTracks, setVotedTracks] = useState({ results: [] });
+  const [voteCount, setVoteCount] = useState();
 
   useEffect(() => {
     function getRefreshToken() {
       axios
         .post('/auth/refresh_token', user)
         .then(response => {
-          const { accessToken, refreshToken } = response.data;
-          SpotifyApi.setAccessToken(accessToken);
-          SpotifyApi.setRefreshToken(refreshToken);
+          const { access_token, refresh_token } = response.data;
+
+          SpotifyApi.setAccessToken(access_token);
+          SpotifyApi.setRefreshToken(refresh_token);
         })
         .catch(err => {
           console.log(err);
@@ -68,7 +96,7 @@ function TuneRoom() {
     // getRefreshToken();
     setInterval(() => {
       getRefreshToken();
-    }, 3000000);
+    }, 1000000);
   }, [user]);
 
   useEffect(() => {
@@ -82,88 +110,62 @@ function TuneRoom() {
           JSON.stringify({ uid: doc.id, ...doc.data() })
         );
       });
-  });
+  }, [user.uid]);
 
-  // useEffect(() => {
-  // updates in realtime from firestore
-  // db.collection('playlists')
-  //   .doc(accessCode)
-  //   .onSnapshot(doc => {
-  //     doc.data().tracks.map(data => {
-  //       SpotifyApi.getPlaylistTracks(playlistId).then(tracks => {
-  //         tracks.body.items.map(spotifyApi => {
-  //           // TODO:
-  //           // increment vote count for specific track
-  //           // if (data.trackUri === spotifyApi.track.uri) {
-  //           //   db.doc(`playlists/${accessCode}`).set({
-  //           //   }, { merge: true });
-  //           // }
-  //         });
-  //       });
-  //     });
-  //   });
-  // }, []);
+  const handleVote = async trackUri => {
+    if (!votedTracks.results.includes(trackUri)) {
+      vote(trackUri, accessCode);
+      setVotedTracks({ results: [...votedTracks.results, trackUri] });
 
-  // useEffect(() => {
-  //   // setDocumentUri(documentUri.uri);
-  //   setLocalDocumentUri(documentUri.uri);
-  // }, [documentUri.uri, documentState]);
+      const filterVotes = documentState.forEach(
+        item => item.uri === trackUri && item.votes++
+      );
+      setVoteCount(filterVotes);
+    }
+  };
 
   return (
-    <div>
-      {voteResults.current.tracksVoted}
-      <button type="submit" onClick={() => navigate('/')}>
-        Return to Home
-      </button>
-      <div>
-        <div>{documentPlaylistName.data}</div>
-        <PlayerContainer>
-          <SpotifyPlayer
-            token={user.accessToken}
-            uris={`${localDocumentUri}`}
-          />
-        </PlayerContainer>
-        {/** PLAYLSIT RESULTS */}
-        {documentState !== '' ? (
-          documentState.map((result, i) => {
-            console.log(result.album.images[2].url);
-            return (
-              <>
-                {/* what's currently playing? */}
-                {i === 1 && <h2>Up Next:</h2>}
-                <ul key={i}>
-                  <li>
-                    <div>{result.name}</div>
-                    <button
-                      type="submit"
-                      onClick={() => handleVote(result.uri)}
-                    >
-                      vote
-                    </button>
-                    {/* Cant parse further down?? */}
-                    <img src={result.album.images[2].url} alt="album-cover" />
-                  </li>
-                </ul>
-              </>
-            );
-          })
-        ) : (
-          <div>
-            <h2>
-              <Link to="/join">Join a playlist</Link> to see what's playing
-            </h2>
-          </div>
-        )}
-        <AddSong />
-        &nbsp;
-        {trackResults.data !== '' && (
-          <button type="submit" onClick={() => setTrackResults({ data: '' })}>
-            Close Search
-          </button>
-        )}
-        <br />
-      </div>
-    </div>
+    <TuneRoomContainer>
+      <PlaylistName>{documentPlaylistName.data}</PlaylistName>
+      <PlayerContainer>
+        <SpotifyPlayer token={user.accessToken} uris={`${localDocumentUri}`} />
+      </PlayerContainer>
+      {documentState !== '' ? (
+        documentState.map((result, i) => {
+          return (
+            <Fragment>
+              {i === 0 && <h2>Up Next:</h2>}
+              <TrackInfoContainer key={i}>
+                <TrackImageContainer>
+                  <img src={result.album.images[2].url} alt="album-cover" />
+                </TrackImageContainer>
+
+                <TrackText>{result.name}</TrackText>
+                <TrackText>{result.votes}</TrackText>
+
+                <button type="submit" onClick={() => handleVote(result.uri)}>
+                  vote
+                </button>
+              </TrackInfoContainer>
+            </Fragment>
+          );
+        })
+      ) : (
+        <div>
+          <h2>
+            <Link to="/join">Join a playlist</Link> to see what's playing
+          </h2>
+        </div>
+      )}
+      <AddSong />
+      &nbsp;
+      {trackResults.data !== '' && (
+        <button type="submit" onClick={() => setTrackResults({ data: '' })}>
+          Close Search
+        </button>
+      )}
+      <br />
+    </TuneRoomContainer>
   );
 }
 
