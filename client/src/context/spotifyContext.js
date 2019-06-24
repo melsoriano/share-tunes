@@ -39,13 +39,6 @@ export const SpotifyProvider = ({ children }) => {
           await setDocumentPlaylistId({ data: doc.data().playlistId });
           await setDocumentUri({ uri: doc.data().uri });
           await setDocumentPlaylistName({ data: doc.data().playlistName });
-          // there is an excess empty string within the array, remove it and set DocumentState to the new array of tracks:
-          // const trackListData = doc.data().tracks;
-          // trackListData.shift();
-          // trackListData.forEach(data => {
-          //   playlistArr.push(data);
-          // });
-          // await setDocumentState(playlistArr);
 
           await playlistRef
             .collection('tracks')
