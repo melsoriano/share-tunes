@@ -62,16 +62,17 @@ function addTrackToPlaylist(track, navigate) {
 }
 
 // Add initial track after playlist creation
-function addStartingTrack(track, navigate) {
+function addStartingTrack(track, setMyAccessCode, setDocumentUri, navigate) {
   getPlaylistFromDb(doc => {
     // check localStorage for current access code and match to get the correct playlist from db
     const accessCodeId = localStorage.getItem('accessCode');
     if (doc.id === accessCodeId) {
-      const { playlistId } = doc.data();
+      const { playlistId, uri } = doc.data();
       SpotifyApi.addTracksToPlaylist(playlistId, [track.uri])
         .then(() => {
           addTrackToDb(track, accessCodeId);
         })
+        .then(setMyAccessCode(accessCodeId), setDocumentUri({ uri }))
         .then(() => {
           SpotifyApi.getPlaylistTracks(playlistId).then(navigate('/tuneroom'));
         })

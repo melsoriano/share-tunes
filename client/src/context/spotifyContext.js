@@ -5,7 +5,14 @@ export const SpotifyContext = React.createContext();
 
 export const SpotifyProvider = ({ children }) => {
   // ACCESS TOKEN -> set when user joins with an accessCode, or creates a new playlsit, generating an accessCode
-  const myAccessCode = localStorage.getItem('accessCode') || 'default';
+  // const [contextAccessCode, setContextAccessCode] = useState()
+  // const myAccessCode = localStorage.getItem('accessCode') || 'default';
+  const [myAccessCode, setMyAccessCode] = useState('default');
+
+  // useEffect(() => {
+  //   console.log('THIS IS CONTEXT MOUNTING');
+  //   // setMyAccessCode(localStorage.getItem('accessCode'));
+  // }, [myAccessCode]);
 
   // FIRESTORE DATABASE CONTEXT -> needed to render and play songs
   const [documentOwnerId, setDocumentOwnerId] = useState({ data: '' });
@@ -25,6 +32,7 @@ export const SpotifyProvider = ({ children }) => {
   // create a useEffect to fetch playlist from firestore, and set to context, depends on localStorage value, which is set in /join
   // see cleanup, should run this effect whenever the accessCode gets changed in localStorage
   useEffect(() => {
+    setMyAccessCode(localStorage.getItem('accessCode'));
     async function fetchData() {
       // placeholder array to push tracks into, see below
       const playlistArr = [];
@@ -76,6 +84,9 @@ export const SpotifyProvider = ({ children }) => {
         setSpotifyToken,
         spotifyRefreshToken,
         setSpotifyRefreshToken,
+        // AccessCode:
+        setMyAccessCode,
+        myAccessCode,
       }}
     >
       {children}
