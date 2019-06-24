@@ -5,14 +5,7 @@ export const SpotifyContext = React.createContext();
 
 export const SpotifyProvider = ({ children }) => {
   // ACCESS TOKEN -> set when user joins with an accessCode, or creates a new playlsit, generating an accessCode
-  // const [contextAccessCode, setContextAccessCode] = useState()
-  // const myAccessCode = localStorage.getItem('accessCode') || 'default';
   const [myAccessCode, setMyAccessCode] = useState('default');
-
-  // useEffect(() => {
-  //   console.log('THIS IS CONTEXT MOUNTING');
-  //   // setMyAccessCode(localStorage.getItem('accessCode'));
-  // }, [myAccessCode]);
 
   // FIRESTORE DATABASE CONTEXT -> needed to render and play songs
   const [documentOwnerId, setDocumentOwnerId] = useState({ data: '' });
@@ -29,13 +22,10 @@ export const SpotifyProvider = ({ children }) => {
     expiresIn: '',
   });
 
-  // create a useEffect to fetch playlist from firestore, and set to context, depends on localStorage value, which is set in /join
-  // see cleanup, should run this effect whenever the accessCode gets changed in localStorage
   useEffect(() => {
     setMyAccessCode(localStorage.getItem('accessCode'));
     async function fetchData() {
-      // placeholder array to push tracks into, see below
-      const playlistArr = [];
+      // let playlistArr = [];
       const playlistRef = db.doc(`playlists/${myAccessCode}`);
       playlistRef
         .get()
@@ -47,16 +37,19 @@ export const SpotifyProvider = ({ children }) => {
           await setDocumentPlaylistId({ data: doc.data().playlistId });
           await setDocumentUri({ uri: doc.data().uri });
           await setDocumentPlaylistName({ data: doc.data().playlistName });
-
-          await playlistRef
-            .collection('tracks')
-            .get()
-            .then(item => {
-              item.docs.map(track => {
-                playlistArr.push(track.data());
+          await playlistRef.collection('tracks').onSnapshot(
+            {
+              // Listen for document metadata changes
+              includeMetadataChanges: true,
+            },
+            async snapDoc => {
+              let playlistArr = [];
+              snapDoc.docs.forEach(item => {
+                playlistArr.push(item.data());
               });
-            });
-          await setDocumentState(playlistArr);
+              await setDocumentState(playlistArr);
+            }
+          );
         })
         .catch(err => {
           console.log(err);

@@ -65,9 +65,11 @@ function TuneRoom() {
   } = useContext(SpotifyContext);
 
   const [localDocumentUri, setLocalDocumentUri] = useState(documentUri);
+  // const [localDocumentState, setLocalDocumentState] = useState(documentState);
 
   useEffect(() => {
     setDocumentState(documentState);
+    // setLocalDocumentState(documentState);
     setLocalDocumentUri(documentUri.uri);
   }, [documentState, documentUri.uri, setDocumentState]);
 

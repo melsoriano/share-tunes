@@ -41,6 +41,7 @@ function addTrackToDb(track, accessCodeId) {
     .doc(track.uri)
     .set({
       ...track,
+      votes: 0,
     });
 }
 
