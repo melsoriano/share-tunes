@@ -1,7 +1,8 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useContext, useEffect } from 'react';
 import { navigate } from '@reach/router';
 import styled from 'styled-components';
 import { SpotifyApi } from '../api/spotify/spotifyConfig';
+import { SpotifyContext } from '../context/spotifyContext';
 import { theme, mixins, Section } from '../styles';
 
 const { fontSizes } = theme;
@@ -67,6 +68,8 @@ const Join = () => {
   const [searchQuery, setSearchQuery] = useState({ code: '' });
   const user = JSON.parse(localStorage.getItem('user'));
 
+  const { setMyAccessCode } = useContext(SpotifyContext);
+
   useEffect(() => {
     if (user !== null) {
       SpotifyApi.setAccessToken(user.accessToken);
@@ -80,6 +83,9 @@ const Join = () => {
   const handleKeyPress = async e => {
     if (e.key === 'Enter') {
       await setSearchQuery({ code: e.target.value });
+      // set it via context for initial render
+      await setMyAccessCode(searchQuery.code);
+      // set access code to localStorage to persist through refresh
       await localStorage.setItem('accessCode', searchQuery.code);
       await navigate('/tuneroom');
     }
@@ -99,11 +105,12 @@ const Join = () => {
       </JoinFieldSet>
       <JoinButton
         type="submit"
-        onClick={async () => {
-          // set access code to localStorage
-          // this will trigger an update in spotifyContext and persist through refresh
-          await localStorage.setItem('accessCode', searchQuery.code);
-          await navigate('/tuneroom');
+        onClick={() => {
+          // set it via context for initial render
+          setMyAccessCode(searchQuery.code);
+          // set access code to localStorage to persist through refresh...it will then reset it to a localStorage.get() in context useEffect()
+          localStorage.setItem('accessCode', searchQuery.code);
+          navigate('/tuneroom');
         }}
       >
         ENTER
