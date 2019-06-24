@@ -1,8 +1,9 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useContext, useEffect } from 'react';
 import { navigate } from '@reach/router';
 import styled from 'styled-components';
 import { searchTracks, addStartingTrack } from '../api/spotify/spotifyApi';
 import { SpotifyApi } from '../api/spotify/spotifyConfig';
+import { SpotifyContext } from '../context/spotifyContext';
 import { theme, mixins } from '../styles';
 
 const { fontSizes, fonts } = theme;
@@ -101,6 +102,8 @@ const AddSong = props => {
   });
   const { path } = props;
 
+  const { setMyAccessCode, setDocumentUri } = useContext(SpotifyContext);
+
   SpotifyApi.setAccessToken(user.accessToken);
   useEffect(() => {
     if (user !== null) {
@@ -113,7 +116,7 @@ const AddSong = props => {
   };
 
   const handleAddTrack = result => {
-    addStartingTrack(result, navigate);
+    addStartingTrack(result, setMyAccessCode, setDocumentUri, navigate);
     setTrackResults({ data: '' });
   };
 

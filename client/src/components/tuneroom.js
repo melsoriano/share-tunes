@@ -23,9 +23,20 @@ function TuneRoom() {
   const user = JSON.parse(localStorage.getItem('user'));
   const accessCode = localStorage.getItem('accessCode');
 
-  const { documentUri, documentPlaylistName, documentState } = useContext(
-    SpotifyContext
-  );
+  const {
+    documentUri,
+    // setDocumentUri,
+    documentPlaylistName,
+    documentState,
+    setDocumentState,
+  } = useContext(SpotifyContext);
+
+  const [localDocumentUri, setLocalDocumentUri] = useState(documentUri);
+
+  useEffect(() => {
+    setDocumentState(documentState);
+    setLocalDocumentUri(documentUri.uri);
+  }, [documentState, documentUri.uri, setDocumentState]);
 
   const [trackResults, setTrackResults] = useState({
     data: '',
@@ -93,6 +104,11 @@ function TuneRoom() {
   //   });
   // }, []);
 
+  // useEffect(() => {
+  //   // setDocumentUri(documentUri.uri);
+  //   setLocalDocumentUri(documentUri.uri);
+  // }, [documentUri.uri, documentState]);
+
   return (
     <div>
       {voteResults.current.tracksVoted}
@@ -102,12 +118,15 @@ function TuneRoom() {
       <div>
         <div>{documentPlaylistName.data}</div>
         <PlayerContainer>
-          <SpotifyPlayer token={user.accessToken} uris={`${documentUri.uri}`} />
+          <SpotifyPlayer
+            token={user.accessToken}
+            uris={`${localDocumentUri}`}
+          />
         </PlayerContainer>
         {/** PLAYLSIT RESULTS */}
         {documentState !== '' ? (
           documentState.map((result, i) => {
-            // console.log(result.trackUri.album.images[0].url);
+            console.log(result.album.images[2].url);
             return (
               <>
                 {/* what's currently playing? */}
@@ -122,7 +141,7 @@ function TuneRoom() {
                       vote
                     </button>
                     {/* Cant parse further down?? */}
-                    {/* <img src={result.album.images[2].url} alt="album-cover" /> */}
+                    <img src={result.album.images[2].url} alt="album-cover" />
                   </li>
                 </ul>
               </>
