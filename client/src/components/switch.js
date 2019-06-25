@@ -14,14 +14,14 @@ const ToggleSwitch = () => {
   // on state change, modify context
   useEffect(() => {
     if (switchState) {
+      setMode(theme.light);
+      localStorage.setItem('switchState', JSON.stringify(false));
+      localStorage.setItem('mode', 'light');
+    } else {
       setMode(theme.dark);
       // add theme into localStorage to persist through refresh
       localStorage.setItem('switchState', JSON.stringify(true));
       localStorage.setItem('mode', 'dark');
-    } else {
-      setMode(theme.light);
-      localStorage.setItem('switchState', JSON.stringify(false));
-      localStorage.setItem('mode', 'light');
     }
   });
 
@@ -29,8 +29,8 @@ const ToggleSwitch = () => {
     <Switch
       checked={switchState}
       onChange={() => (switchState ? setSwitch(false) : setSwitch(true))}
-      onColor={`${colorOptions.aqua}`}
-      offColor={`${colorOptions.coral}`}
+      onColor={`${colorOptions.coral}`}
+      offColor={`${colorOptions.aqua}`}
       handleDiameter={16}
       uncheckedIcon={
         <div
