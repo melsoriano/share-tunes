@@ -3,6 +3,7 @@ import { navigate } from '@reach/router';
 import styled from 'styled-components';
 import { SpotifyApi } from '../api/spotify/spotifyConfig';
 import { SpotifyContext } from '../context/spotifyContext';
+import { checkPlaylistExists } from '../api/firebase/firebaseApi';
 import { theme, mixins, Section } from '../styles';
 
 const { fontSizes } = theme;
@@ -106,11 +107,12 @@ const Join = () => {
       <JoinButton
         type="submit"
         onClick={() => {
+          checkPlaylistExists(searchQuery.code);
           // set it via context for initial render
-          setMyAccessCode(searchQuery.code);
           // set access code to localStorage to persist through refresh...it will then reset it to a localStorage.get() in context useEffect()
-          localStorage.setItem('accessCode', searchQuery.code);
-          navigate('/tuneroom');
+          // setMyAccessCode(searchQuery.code);
+          // localStorage.setItem('accessCode', searchQuery.code);
+          // navigate('/tuneroom');
         }}
       >
         ENTER
