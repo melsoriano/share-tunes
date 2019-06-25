@@ -147,6 +147,7 @@ function reorderTrack(documentPlaylistId, accessCode) {
           });
         })
         .then(() => {
+          console.log('nextUp: ', nextUp);
           // modify the playlist in Spotify to reorder the highest voted song to the next song in the playlist
           // https://github.com/JMPerez/spotify-web-api-js/blob/master/src/spotify-web-api.js line 822
           // i think this is working with hardcoded indexes
