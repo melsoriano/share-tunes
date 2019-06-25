@@ -1,4 +1,5 @@
 import React, { useState, useContext, useEffect } from 'react';
+import { db } from '../api/firebase/firebaseConfig';
 import { navigate } from '@reach/router';
 import styled from 'styled-components';
 import { SpotifyApi } from '../api/spotify/spotifyConfig';
@@ -65,7 +66,13 @@ const JoinInputLabel = styled.label`
   pointer-events: none;
 `;
 
+const FlashMessage = styled.div`
+  /* color: ${props => props.theme.colors.fontColor}; */
+  color: red; 
+`;
+
 const Join = () => {
+  const [flashMessage, setFlashMessage] = useState(false);
   const [searchQuery, setSearchQuery] = useState({ code: '' });
   const user = JSON.parse(localStorage.getItem('user'));
 
@@ -84,12 +91,32 @@ const Join = () => {
   const handleKeyPress = async e => {
     if (e.key === 'Enter') {
       await setSearchQuery({ code: e.target.value });
-      // set it via context for initial render
+      await checkPlaylistExists(searchQuery.code);
       await setMyAccessCode(searchQuery.code);
-      // set access code to localStorage to persist through refresh
       await localStorage.setItem('accessCode', searchQuery.code);
-      await navigate('/tuneroom');
     }
+  };
+
+  const checkPlaylistExists = searchQuery => {
+    console.log('check if playlist exsists: ', searchQuery);
+    db.collection('playlists')
+      .get()
+      .then(querySnapshot => {
+        let isMatch = false;
+        querySnapshot.forEach(doc => {
+          if (doc.id === searchQuery) {
+            isMatch = true;
+          } else {
+            isMatch = false;
+          }
+        });
+        if (isMatch) {
+          setFlashMessage(false);
+          navigate('/tuneroom');
+        } else {
+          setFlashMessage(true);
+        }
+      });
   };
 
   return (
@@ -103,16 +130,16 @@ const Join = () => {
           required
         />
         <JoinInputLabel>Enter Access Code</JoinInputLabel>
+        {flashMessage && (
+          <FlashMessage>Please enter valid Access Code</FlashMessage>
+        )}
       </JoinFieldSet>
       <JoinButton
         type="submit"
         onClick={() => {
           checkPlaylistExists(searchQuery.code);
-          // set it via context for initial render
-          // set access code to localStorage to persist through refresh...it will then reset it to a localStorage.get() in context useEffect()
-          // setMyAccessCode(searchQuery.code);
-          // localStorage.setItem('accessCode', searchQuery.code);
-          // navigate('/tuneroom');
+          setMyAccessCode(searchQuery.code);
+          localStorage.setItem('accessCode', searchQuery.code);
         }}
       >
         ENTER
