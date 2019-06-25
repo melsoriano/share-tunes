@@ -29,8 +29,8 @@ const ToggleSwitch = () => {
     <Switch
       checked={switchState}
       onChange={() => (switchState ? setSwitch(false) : setSwitch(true))}
-      onColor={`${colorOptions.aqua}`}
-      offColor={`${colorOptions.coral}`}
+      onColor={`${colorOptions.coral}`}
+      offColor={`${colorOptions.aqua}`}
       handleDiameter={16}
       uncheckedIcon={
         <div

@@ -58,6 +58,7 @@ function TuneRoom() {
 
   const {
     documentUri,
+    documentPlaylistId,
     // setDocumentUri,
     documentPlaylistName,
     documentState,
@@ -65,9 +66,11 @@ function TuneRoom() {
   } = useContext(SpotifyContext);
 
   const [localDocumentUri, setLocalDocumentUri] = useState(documentUri);
+  // const [localDocumentState, setLocalDocumentState] = useState(documentState);
 
   useEffect(() => {
     setDocumentState(documentState);
+    // setLocalDocumentState(documentState);
     setLocalDocumentUri(documentUri.uri);
   }, [documentState, documentUri.uri, setDocumentState]);
 
@@ -112,9 +115,9 @@ function TuneRoom() {
       });
   }, [user.uid]);
 
-  const handleVote = async trackUri => {
+  const handleVote = async (trackUri, documentUri) => {
     if (!votedTracks.results.includes(trackUri)) {
-      vote(trackUri, accessCode);
+      vote(trackUri, accessCode, documentPlaylistId);
       setVotedTracks({ results: [...votedTracks.results, trackUri] });
 
       const filterVotes = documentState.forEach(
@@ -142,8 +145,10 @@ function TuneRoom() {
 
                 <TrackText>{result.name}</TrackText>
                 <TrackText>{result.votes}</TrackText>
-
-                <button type="submit" onClick={() => handleVote(result.uri)}>
+                <button
+                  type="submit"
+                  onClick={() => handleVote(result.uri, documentUri)}
+                >
                   vote
                 </button>
               </TrackInfoContainer>
