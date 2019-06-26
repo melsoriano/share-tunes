@@ -1,6 +1,5 @@
 import * as firebase from 'firebase';
 import { db } from './firebaseConfig';
-import { reorderTrack } from '../spotify/spotifyApi';
 
 function addNewPlaylistToDb(
   accessCodeId,
@@ -46,12 +45,14 @@ function addTrackToDb(track, accessCodeId) {
     });
 }
 
-function vote(trackUri, accessCode, documentPlaylistId) {
+function vote(trackUri, accessCode) {
   db.doc(`playlists/${accessCode}`)
     .collection('tracks')
     .doc(trackUri)
-    .set({ votes: firebase.firestore.FieldValue.increment(1) }, { merge: true })
-    .then(reorderTrack(documentPlaylistId, accessCode));
+    .set(
+      { votes: firebase.firestore.FieldValue.increment(1) },
+      { merge: true }
+    );
 }
 
 function checkPlaylistExists(searchQuery) {
