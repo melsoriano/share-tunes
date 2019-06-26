@@ -14,14 +14,14 @@ const ToggleSwitch = () => {
   // on state change, modify context
   useEffect(() => {
     if (switchState) {
+      localStorage.setItem('mode', 'dark');
+      localStorage.setItem('switchState', JSON.stringify(true));
       setMode(theme.dark);
       // add theme into localStorage to persist through refresh
-      localStorage.setItem('switchState', JSON.stringify(true));
-      localStorage.setItem('mode', 'dark');
     } else {
-      setMode(theme.light);
-      localStorage.setItem('switchState', JSON.stringify(false));
       localStorage.setItem('mode', 'light');
+      localStorage.setItem('switchState', JSON.stringify(false));
+      setMode(theme.light);
     }
   });
 
@@ -29,8 +29,8 @@ const ToggleSwitch = () => {
     <Switch
       checked={switchState}
       onChange={() => (switchState ? setSwitch(false) : setSwitch(true))}
-      onColor={`${colorOptions.aqua}`}
-      offColor={`${colorOptions.coral}`}
+      onColor={`${colorOptions.coral}`}
+      offColor={`${colorOptions.aqua}`}
       handleDiameter={16}
       uncheckedIcon={
         <div
@@ -42,7 +42,7 @@ const ToggleSwitch = () => {
             paddingRight: 2,
           }}
         >
-          <IconMoon />
+          <IconSun />
         </div>
       }
       checkedIcon={
@@ -55,7 +55,7 @@ const ToggleSwitch = () => {
             paddingRight: 2,
           }}
         >
-          <IconSun />
+          <IconMoon />
         </div>
       }
       boxShadow="0px 1px 5px rgba(0, 0, 0, 0.6)"
