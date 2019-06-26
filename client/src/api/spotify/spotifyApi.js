@@ -84,90 +84,37 @@ function addStartingTrack(track, setMyAccessCode, setDocumentUri, navigate) {
   });
 }
 
-function playTrack(playlistId) {
-  // REMOVE HARD CODE!!!
-
-  SpotifyApi.getPlaylist(playlistId)
-    .then(data => {
-      const { uri } = data.body;
-      SpotifyApi.play({ context_uri: uri }).then(() => {
-        SpotifyApi.getMyCurrentPlaybackState().then(state => {
-          // TODO: Set state to have `isPlaying` set to true if song is playing
-          return state;
-        });
-      });
-    })
-    .catch(error => {
-      return error;
-    });
-}
-
-function pauseTrack() {
-  SpotifyApi.pause()
-    .then(() => {
-      SpotifyApi.getMyCurrentPlaybackState().then(state => {
-        return state;
-      });
-    })
-    .catch(error => {
-      return error;
-    });
-}
-
 // REORDERING ALGORITHM
 function reorderTrack(documentPlaylistId, accessCode) {
-  let nextSong = { uri: '', name: '' };
-  let highestVote = 0;
-  let nextUp = {};
+  const uriByHighestVotes = [];
+  let nextTrackIndex;
   // get the playlist from firestore, to check for song with most votes
   db.doc(`playlists/${accessCode}`)
     .collection('tracks')
+    .orderBy('votes', 'desc') // sort db items by highest votes
     .get()
     .then(querySnapshot => {
       querySnapshot.forEach(doc => {
-        // parse the data, and find which song has most votes. set it to access
-        const { name, uri, votes } = doc.data();
-        if (votes > highestVote) {
-          nextSong.name = name;
-          nextSong.uri = uri;
-          highestVote = votes;
-        }
+        const { uri } = doc.data();
+        uriByHighestVotes.push(uri);
       });
     })
     .then(() => {
-      // find the index of the nextSong, which has the most votes as decided in last method
-      SpotifyApi.getPlaylistTracks(documentPlaylistId.data)
-        .then(data => {
-          const trackList = data.body.items;
-          trackList.forEach(track => {
-            if ((track.name = nextSong.name)) {
-              nextUp = trackList.indexOf(track);
-              // nextUp is always 3???
-            }
-          });
-        })
-        .then(() => {
-          // modify the playlist in Spotify to reorder the highest voted song to the next song in the playlist
-          // https://github.com/JMPerez/spotify-web-api-js/blob/master/src/spotify-web-api.js line 822
-          // i think this is working with hardcoded indexes
-          // you need to refresh the spotify playlist console to see the change after clicking 'vote'
-          // since nextUp is always 3.....it's not working......
+      SpotifyApi.getPlaylistTracks(documentPlaylistId.data).then(data => {
+        const trackList = data.body.items;
+        trackList.map((trackData, trackIndex) => {
+          const { uri } = trackData.track;
+          // Find the uri of the Spotify track in `uriByHighestVotes` and return the index
+          // `nextTrackIndex` is used to order the tracks by index in the playlist by highest votes
+          nextTrackIndex = uriByHighestVotes.indexOf(uri);
+
           SpotifyApi.reorderTracksInPlaylist(
             documentPlaylistId.data,
-            nextUp,
-            1,
-            {
-              rangeStart: 1,
-              insertBefore: 1,
-            }
-          )
-            .then(data => {
-              console.log(data.body.snapshot_id);
-            })
-            .catch(error => {
-              return error;
-            });
+            trackIndex,
+            nextTrackIndex
+          ).catch(error => error);
         });
+      });
     });
 }
 
@@ -176,7 +123,5 @@ export {
   searchTracks,
   addTrackToPlaylist,
   addStartingTrack,
-  playTrack,
-  pauseTrack,
   reorderTrack,
 };

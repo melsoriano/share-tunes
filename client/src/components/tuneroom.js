@@ -5,6 +5,7 @@ import axios from 'axios';
 import styled from 'styled-components';
 import { SpotifyContext } from '../context/spotifyContext';
 import { SpotifyApi } from '../api/spotify/spotifyConfig';
+import { reorderTrack } from '../api/spotify/spotifyApi';
 import { db } from '../api/firebase/firebaseConfig';
 import { vote } from '../api/firebase/firebaseApi';
 import { theme, mixins } from '../styles';
@@ -32,7 +33,7 @@ const PlayerContainer = styled.div`
   }
 `;
 
-const TrackInfoContainer = styled.div`
+const TracksContainer = styled.div`
   display: flex;
   flex-flow: row wrap;
   justify-content: space-between;
@@ -40,16 +41,26 @@ const TrackInfoContainer = styled.div`
   text-align: left;
 `;
 
-const TrackImageContainer = styled.image`
+const TrackImageContainer = styled.div`
   padding: 5px;
 `;
 
-const TrackTextContainer = styled.div`
-  text-align: left;
+const TrackInfoContainer = styled.div`
+  display: flex;
+  flex-flow: row wrap;
 `;
 
 const TrackText = styled.p`
   text-align: left;
+`;
+
+const VoteContainer = styled.div`
+  display: flex;
+  flex-flow: column wrap;
+`;
+
+const VoteText = styled.p`
+  font-size: ${fontSizes.xsmall};
 `;
 
 function TuneRoom() {
@@ -113,9 +124,11 @@ function TuneRoom() {
           JSON.stringify({ uid: doc.id, ...doc.data() })
         );
       });
-  }, [user.uid]);
+    // Reordering tracks when component loads
+    reorderTrack(documentPlaylistId, accessCode);
+  }, [accessCode, documentPlaylistId, user.uid]);
 
-  const handleVote = async (trackUri, documentUri) => {
+  const handleVote = trackUri => {
     if (!votedTracks.results.includes(trackUri)) {
       vote(trackUri, accessCode, documentPlaylistId);
       setVotedTracks({ results: [...votedTracks.results, trackUri] });
@@ -125,6 +138,8 @@ function TuneRoom() {
       );
       setVoteCount(filterVotes);
     }
+    // Reordering tracks when someone votes
+    reorderTrack(documentPlaylistId, accessCode);
   };
 
   return (
@@ -134,27 +149,36 @@ function TuneRoom() {
         <SpotifyPlayer token={user.accessToken} uris={`${localDocumentUri}`} />
       </PlayerContainer>
       {documentState !== '' ? (
-        documentState.map((result, i) => {
-          return (
-            <Fragment>
-              {i === 0 && <h2>Up Next:</h2>}
-              <TrackInfoContainer key={i}>
-                <TrackImageContainer>
-                  <img src={result.album.images[2].url} alt="album-cover" />
-                </TrackImageContainer>
-
-                <TrackText>{result.name}</TrackText>
-                <TrackText>{result.votes}</TrackText>
-                <button
-                  type="submit"
-                  onClick={() => handleVote(result.uri, documentUri)}
-                >
-                  vote
-                </button>
-              </TrackInfoContainer>
-            </Fragment>
-          );
-        })
+        documentState
+          .sort((a, b) => b.votes - a.votes)
+          .map((result, i) => {
+            return (
+              <Fragment>
+                {i === 0 && <h2>Up Next:</h2>}
+                <TracksContainer key={i}>
+                  <TrackInfoContainer>
+                    <TrackImageContainer>
+                      <img src={result.album.images[2].url} alt="album-cover" />
+                    </TrackImageContainer>
+                    <TrackText>
+                      {result.name}
+                      <br />
+                      {result.artists[0].name}
+                    </TrackText>
+                  </TrackInfoContainer>
+                  <VoteContainer>
+                    <button
+                      type="submit"
+                      onClick={() => handleVote(result.uri, documentUri)}
+                    >
+                      vote
+                    </button>
+                    <VoteText>{result.votes} Votes</VoteText>
+                  </VoteContainer>
+                </TracksContainer>
+              </Fragment>
+            );
+          })
       ) : (
         <div>
           <h2>
