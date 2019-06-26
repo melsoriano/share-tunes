@@ -57,22 +57,21 @@ function vote(trackUri, accessCode) {
 
 function checkPlaylistExists(searchQuery) {
   console.log('check if playlist exsists: ', searchQuery);
-  let isMatch = false;
   db.collection('playlists')
     .get()
     .then(querySnapshot => {
-      querySnapshot
-        .forEach(doc => {
-          if (doc.id === searchQuery) {
-            isMatch = true;
-          } else {
-            isMatch = false;
-          }
-          // idArr.push(doc.id);
-          // console.log(isMatch);
-          return isMatch;
-        })
-        .then(console.log(isMatch));
+      let isMatch = false;
+      querySnapshot.forEach(doc => {
+        if (doc.id === searchQuery) {
+          isMatch = true;
+        } else {
+          isMatch = false;
+        }
+        // idArr.push(doc.id);
+        // console.log(isMatch);
+      });
+      console.log(isMatch);
+      return isMatch;
     });
 }
 
