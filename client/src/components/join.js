@@ -75,9 +75,10 @@ const Join = () => {
   const [searchQuery, setSearchQuery] = useState({ code: '' });
   const user = JSON.parse(localStorage.getItem('user'));
 
-  const { setMyAccessCode } = useContext(SpotifyContext);
+  const { myAccessCode, setMyAccessCode } = useContext(SpotifyContext);
 
   useEffect(() => {
+    console.log('myAccessCode /join:', myAccessCode);
     if (user !== null) {
       SpotifyApi.setAccessToken(user.accessToken);
     }
@@ -95,7 +96,7 @@ const Join = () => {
         });
         if (isMatch) {
           setFlashMessage(false);
-          navigate('/tuneroom');
+          navigate(`/tuneroom/${myAccessCode}`);
         } else {
           setFlashMessage(true);
         }

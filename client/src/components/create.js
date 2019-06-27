@@ -1,9 +1,11 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useContext } from 'react';
 import { navigate } from '@reach/router';
 import styled from 'styled-components';
 import { createSpotifyPlaylist } from '../api/spotify/spotifyApi';
 import { SpotifyApi } from '../api/spotify/spotifyConfig';
 import { theme, mixins, Section } from '../styles';
+
+import { SpotifyContext } from '../context/spotifyContext';
 
 const { fontSizes } = theme;
 
@@ -71,6 +73,8 @@ const Create = () => {
     playlistName: '',
   });
 
+  const { myAccessCode, setMyAccessCode } = useContext(SpotifyContext);
+
   useEffect(() => {
     localStorage.setItem('isLoading', false);
     if (user !== null) {
@@ -84,7 +88,12 @@ const Create = () => {
 
   const handleKeyPress = e => {
     if (e.key === 'Enter') {
-      createSpotifyPlaylist(user.uid, playlist.playlistName, navigate);
+      createSpotifyPlaylist(
+        user.uid,
+        playlist.playlistName,
+        setMyAccessCode,
+        navigate
+      );
     }
   };
 
@@ -103,7 +112,12 @@ const Create = () => {
       <CreateButton
         type="submit"
         onClick={() =>
-          createSpotifyPlaylist(user.uid, playlist.playlistName, navigate)
+          createSpotifyPlaylist(
+            user.uid,
+            playlist.playlistName,
+            setMyAccessCode,
+            navigate
+          )
         }
       >
         CREATE PLAYLIST

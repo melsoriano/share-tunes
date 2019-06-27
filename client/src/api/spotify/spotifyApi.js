@@ -7,13 +7,19 @@ import {
 } from '../firebase/firebaseApi';
 import { db } from '../firebase/firebaseConfig';
 
-function createSpotifyPlaylist(userId, playlistName, navigate) {
+function createSpotifyPlaylist(
+  userId,
+  playlistName,
+  setMyAccessCode,
+  navigate
+) {
   const accessCodeId = Math.random()
     .toString(36)
     .substr(2, 4);
   // Every time a new playlist is created, set the new accessCode to localStorage
   // This will trigger an update to spotifyContext
   localStorage.setItem('accessCode', accessCodeId);
+  setMyAccessCode(accessCodeId);
 
   SpotifyApi.createPlaylist(userId, playlistName, {
     public: false,
@@ -30,8 +36,8 @@ function createSpotifyPlaylist(userId, playlistName, navigate) {
         playlistName,
         uri
       );
-      await navigate('/add');
     })
+    .then(navigate(`/tuneroom/${accessCodeId}`))
     .catch(error => {
       return error;
     });
