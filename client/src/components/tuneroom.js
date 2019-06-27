@@ -70,7 +70,7 @@ function TuneRoom() {
   const {
     documentUri,
     documentPlaylistId,
-    // setDocumentUri,
+    documentOwnerId,
     documentPlaylistName,
     documentState,
     setDocumentState,
@@ -103,14 +103,13 @@ function TuneRoom() {
           SpotifyApi.setRefreshToken(refresh_token);
         })
         .catch(err => {
-          console.log(err);
           return err;
         });
     }
     // getRefreshToken();
     setInterval(() => {
       getRefreshToken();
-    }, 1000000);
+    }, 2000000);
   }, [user]);
 
   useEffect(() => {
@@ -125,8 +124,11 @@ function TuneRoom() {
         );
       });
     // Reordering tracks when component loads
-    reorderTrack(documentPlaylistId, accessCode);
-  }, [accessCode, documentPlaylistId, user.uid]);
+    // if (documentPlaylistId.data !== '') {
+    //   // console.log(documentPlaylistId.data);
+    //   reorderTrack(documentPlaylistId.data, accessCode, documentOwnerId.data);
+    // }
+  }, [accessCode, documentOwnerId, documentPlaylistId, user.uid]);
 
   const handleVote = trackUri => {
     if (!votedTracks.results.includes(trackUri)) {
@@ -139,7 +141,8 @@ function TuneRoom() {
       setVoteCount(filterVotes);
     }
     // Reordering tracks when someone votes
-    reorderTrack(documentPlaylistId, accessCode);
+
+    reorderTrack(documentPlaylistId.data, accessCode, documentOwnerId.data);
   };
 
   return (

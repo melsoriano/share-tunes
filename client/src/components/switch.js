@@ -29,8 +29,8 @@ const ToggleSwitch = () => {
     <Switch
       checked={switchState}
       onChange={() => (switchState ? setSwitch(false) : setSwitch(true))}
-      onColor={`${colorOptions.coral}`}
-      offColor={`${colorOptions.aqua}`}
+      onColor={`${colorOptions.aqua}`}
+      offColor={`${colorOptions.coral}`}
       handleDiameter={16}
       uncheckedIcon={
         <div
@@ -42,7 +42,7 @@ const ToggleSwitch = () => {
             paddingRight: 2,
           }}
         >
-          <IconSun />
+          <IconMoon />
         </div>
       }
       checkedIcon={
@@ -55,7 +55,7 @@ const ToggleSwitch = () => {
             paddingRight: 2,
           }}
         >
-          <IconMoon />
+          <IconSun />
         </div>
       }
       boxShadow="0px 1px 5px rgba(0, 0, 0, 0.6)"

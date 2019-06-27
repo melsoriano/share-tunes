@@ -1,3 +1,4 @@
+import axios from 'axios';
 import { SpotifyApi } from './spotifyConfig';
 import {
   addNewPlaylistToDb,
@@ -46,20 +47,32 @@ function searchTracks(query, setTrackResults) {
     });
 }
 
-function addTrackToPlaylist(track, navigate) {
-  getPlaylistFromDb(doc => {
-    const { playlistId } = doc.data();
-    const accessCodeId = doc.id;
-
-    SpotifyApi.addTracksToPlaylist(playlistId, [track])
-      .then(() => {
-        addTrackToDb(track, accessCodeId);
-        navigate('./home');
-      })
-      .catch(error => {
-        return error;
-      });
-  });
+function addTrack(ownerId, playlistId, track) {
+  db.doc(`users/${ownerId}`)
+    .get()
+    .then(doc => {
+      const { accessToken } = doc.data();
+      if (doc.id === ownerId) {
+        axios
+          .post(
+            `https://api.spotify.com/v1/playlists/${playlistId}/tracks`,
+            { uris: [track.uri] },
+            {
+              headers: {
+                Authorization: `Bearer ${accessToken}`,
+                'Content-Type': 'application/json;charset`UTF-8',
+              },
+            }
+          )
+          .then(response => {
+            if (response.status === 201) {
+              const accessCode = localStorage.getItem('accessCode');
+              addTrackToDb(track, accessCode);
+            }
+          })
+          .catch(error => error);
+      }
+    });
 }
 
 // Add initial track after playlist creation
@@ -85,7 +98,7 @@ function addStartingTrack(track, setMyAccessCode, setDocumentUri, navigate) {
 }
 
 // REORDERING ALGORITHM
-function reorderTrack(documentPlaylistId, accessCode) {
+function reorderTrack(documentPlaylistId, accessCode, ownerId) {
   const uriByHighestVotes = [];
   let nextTrackIndex;
   // get the playlist from firestore, to check for song with most votes
@@ -100,28 +113,46 @@ function reorderTrack(documentPlaylistId, accessCode) {
       });
     })
     .then(() => {
-      SpotifyApi.getPlaylistTracks(documentPlaylistId.data).then(data => {
-        const trackList = data.body.items;
-        trackList.map((trackData, trackIndex) => {
-          const { uri } = trackData.track;
-          // Find the uri of the Spotify track in `uriByHighestVotes` and return the index
-          // `nextTrackIndex` is used to order the tracks by index in the playlist by highest votes
-          nextTrackIndex = uriByHighestVotes.indexOf(uri);
+      // Get the playlist owner's id to get token
+      db.doc(`users/${ownerId}`)
+        .get()
+        .then(doc => {
+          const { accessToken } = doc.data();
 
-          SpotifyApi.reorderTracksInPlaylist(
-            documentPlaylistId.data,
-            trackIndex,
-            nextTrackIndex
-          ).catch(error => error);
+          SpotifyApi.getPlaylistTracks(documentPlaylistId).then(data => {
+            const trackList = data.body.items;
+            trackList.map((trackData, trackIndex) => {
+              const { uri } = trackData.track;
+              // nextTrackIndex` represents where in the Array the ranked tracks should go based on vote count
+              nextTrackIndex = uriByHighestVotes.indexOf(uri);
+
+              if (nextTrackIndex !== -1 && documentPlaylistId !== undefined) {
+                axios
+                  .put(
+                    `https://api.spotify.com/v1/playlists/${documentPlaylistId}/tracks`,
+                    { range_start: trackIndex, insert_before: nextTrackIndex },
+                    {
+                      headers: {
+                        Authorization: `Bearer ${accessToken}`,
+                        'Content-Type': 'application/json;charset`UTF-8',
+                      },
+                    }
+                  )
+                  .then(data => {
+                    console.log(data);
+                  })
+                  .catch(error => error);
+              }
+            });
+          });
         });
-      });
     });
 }
 
 export {
   createSpotifyPlaylist,
   searchTracks,
-  addTrackToPlaylist,
+  addTrack,
   addStartingTrack,
   reorderTrack,
 };

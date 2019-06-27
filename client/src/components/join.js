@@ -1,10 +1,9 @@
 import React, { useState, useContext, useEffect } from 'react';
-import { db } from '../api/firebase/firebaseConfig';
 import { navigate } from '@reach/router';
 import styled from 'styled-components';
+import { db } from '../api/firebase/firebaseConfig';
 import { SpotifyApi } from '../api/spotify/spotifyConfig';
 import { SpotifyContext } from '../context/spotifyContext';
-import { checkPlaylistExists } from '../api/firebase/firebaseApi';
 import { theme, mixins, Section } from '../styles';
 
 const { fontSizes } = theme;
@@ -84,30 +83,14 @@ const Join = () => {
     }
   }, [user]);
 
-  const handleAccessCode = e => {
-    setSearchQuery({ code: e.target.value });
-  };
-
-  const handleKeyPress = async e => {
-    if (e.key === 'Enter') {
-      await setSearchQuery({ code: e.target.value });
-      await checkPlaylistExists(searchQuery.code);
-      await setMyAccessCode(searchQuery.code);
-      await localStorage.setItem('accessCode', searchQuery.code);
-    }
-  };
-
-  const checkPlaylistExists = searchQuery => {
-    console.log('check if playlist exsists: ', searchQuery);
+  const checkPlaylistExists = code => {
     db.collection('playlists')
       .get()
       .then(querySnapshot => {
         let isMatch = false;
         querySnapshot.forEach(doc => {
-          if (doc.id === searchQuery) {
+          if (doc.id === code) {
             isMatch = true;
-          } else {
-            isMatch = false;
           }
         });
         if (isMatch) {
@@ -117,6 +100,19 @@ const Join = () => {
           setFlashMessage(true);
         }
       });
+  };
+
+  const handleAccessCode = e => {
+    setSearchQuery({ code: e.target.value });
+  };
+
+  const handleKeyPress = async e => {
+    if (e.key === 'Enter') {
+      setSearchQuery({ code: e.target.value });
+      checkPlaylistExists(searchQuery.code);
+      setMyAccessCode(searchQuery.code);
+      localStorage.setItem('accessCode', searchQuery.code);
+    }
   };
 
   return (
