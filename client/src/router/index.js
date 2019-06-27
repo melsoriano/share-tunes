@@ -22,7 +22,8 @@ const ReactRouter = () => {
           <Create path="/create" />
           <Join path="/join" />
           <AddSong path="/add" />
-          <TuneRoom path="/tuneroom" />
+          {/* <TuneRoom path="/tuneroom" /> */}
+          <TuneRoom path="/tuneroom/:code" />
         </Router>
       </Fragment>
     </ThemeProvider>

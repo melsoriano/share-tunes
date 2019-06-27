@@ -95,7 +95,7 @@ const Join = () => {
         });
         if (isMatch) {
           setFlashMessage(false);
-          navigate('/tuneroom');
+          navigate(`/tuneroom/${code}`);
         } else {
           setFlashMessage(true);
         }
@@ -108,10 +108,10 @@ const Join = () => {
 
   const handleKeyPress = async e => {
     if (e.key === 'Enter') {
-      setSearchQuery({ code: e.target.value });
-      checkPlaylistExists(searchQuery.code);
-      setMyAccessCode(searchQuery.code);
-      localStorage.setItem('accessCode', searchQuery.code);
+      await setSearchQuery({ code: e.target.value });
+      await setMyAccessCode(searchQuery.code);
+      await checkPlaylistExists(searchQuery.code);
+      await localStorage.setItem('accessCode', searchQuery.code);
     }
   };
 

@@ -22,6 +22,7 @@ export const SpotifyProvider = ({ children }) => {
     expiresIn: '',
   });
   useEffect(() => {
+    let urlAccessCode = window.location.pathname.split('/').pop();
     setMyAccessCode(localStorage.getItem('accessCode'));
     async function fetchData() {
       const playlistRef = db.doc(`playlists/${myAccessCode}`);
