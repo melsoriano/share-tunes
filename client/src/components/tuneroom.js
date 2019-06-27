@@ -106,7 +106,7 @@ function TuneRoom() {
           return err;
         });
     }
-    getRefreshToken();
+    // getRefreshToken();
     setInterval(() => {
       getRefreshToken();
     }, 2000000);
@@ -141,7 +141,8 @@ function TuneRoom() {
       setVoteCount(filterVotes);
     }
     // Reordering tracks when someone votes
-    reorderTrack(documentPlaylistId, accessCode);
+
+    reorderTrack(documentPlaylistId.data, accessCode, documentOwnerId.data);
   };
 
   return (

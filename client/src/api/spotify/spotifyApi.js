@@ -118,6 +118,7 @@ function reorderTrack(documentPlaylistId, accessCode, ownerId) {
         .get()
         .then(doc => {
           const { accessToken } = doc.data();
+
           SpotifyApi.getPlaylistTracks(documentPlaylistId).then(data => {
             const trackList = data.body.items;
             trackList.map((trackData, trackIndex) => {
@@ -126,16 +127,21 @@ function reorderTrack(documentPlaylistId, accessCode, ownerId) {
               nextTrackIndex = uriByHighestVotes.indexOf(uri);
 
               if (nextTrackIndex !== -1 && documentPlaylistId !== undefined) {
-                axios.put(
-                  `https://api.spotify.com/v1/playlists/${documentPlaylistId}/tracks`,
-                  { range_start: trackIndex, insert_before: nextTrackIndex },
-                  {
-                    headers: {
-                      Authorization: `Bearer ${accessToken}`,
-                      'Content-Type': 'application/json;charset`UTF-8',
-                    },
-                  }
-                );
+                axios
+                  .put(
+                    `https://api.spotify.com/v1/playlists/${documentPlaylistId}/tracks`,
+                    { range_start: trackIndex, insert_before: nextTrackIndex },
+                    {
+                      headers: {
+                        Authorization: `Bearer ${accessToken}`,
+                        'Content-Type': 'application/json;charset`UTF-8',
+                      },
+                    }
+                  )
+                  .then(data => {
+                    console.log(data);
+                  })
+                  .catch(error => error);
               }
             });
           });
