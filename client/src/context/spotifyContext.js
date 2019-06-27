@@ -21,7 +21,6 @@ export const SpotifyProvider = ({ children }) => {
   const [spotifyRefreshToken, setSpotifyRefreshToken] = useState({
     expiresIn: '',
   });
-
   useEffect(() => {
     setMyAccessCode(localStorage.getItem('accessCode'));
     async function fetchData() {
@@ -42,7 +41,7 @@ export const SpotifyProvider = ({ children }) => {
               includeMetadataChanges: true,
             },
             async snapDoc => {
-              let playlistArr = [];
+              const playlistArr = [];
               snapDoc.docs.forEach(item => {
                 playlistArr.push(item.data());
               });

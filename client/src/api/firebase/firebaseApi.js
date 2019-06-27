@@ -1,4 +1,5 @@
 import * as firebase from 'firebase';
+import axios from 'axios';
 import { db } from './firebaseConfig';
 
 function addNewPlaylistToDb(
@@ -55,30 +56,4 @@ function vote(trackUri, accessCode) {
     );
 }
 
-function checkPlaylistExists(searchQuery) {
-  console.log('check if playlist exsists: ', searchQuery);
-  db.collection('playlists')
-    .get()
-    .then(querySnapshot => {
-      let isMatch = false;
-      querySnapshot.forEach(doc => {
-        if (doc.id === searchQuery) {
-          isMatch = true;
-        } else {
-          isMatch = false;
-        }
-        // idArr.push(doc.id);
-        // console.log(isMatch);
-      });
-      console.log(isMatch);
-      return isMatch;
-    });
-}
-
-export {
-  addNewPlaylistToDb,
-  getPlaylistFromDb,
-  addTrackToDb,
-  vote,
-  checkPlaylistExists,
-};
+export { addNewPlaylistToDb, getPlaylistFromDb, addTrackToDb, vote };

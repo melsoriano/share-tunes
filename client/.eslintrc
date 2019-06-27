@@ -17,7 +17,8 @@
     "camelcase": [
       "error",
       { "ignoreDestructuring": true, "properties": "never" }
-    ]
+    ],
+    "array-callback-return": "off"
   },
   "globals": {
     "window": true,
