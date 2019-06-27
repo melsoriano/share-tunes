@@ -74,12 +74,14 @@ function TuneRoom() {
     documentPlaylistName,
     documentState,
     setDocumentState,
+    myAccessCode,
   } = useContext(SpotifyContext);
 
   const [localDocumentUri, setLocalDocumentUri] = useState(documentUri);
   // const [localDocumentState, setLocalDocumentState] = useState(documentState);
 
   useEffect(() => {
+    console.log('myAccessCode /tuneroom: ', myAccessCode);
     setDocumentState(documentState);
     // setLocalDocumentState(documentState);
     setLocalDocumentUri(documentUri.uri);
