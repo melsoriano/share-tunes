@@ -7,7 +7,7 @@ import {
 } from '../firebase/firebaseApi';
 import { db } from '../firebase/firebaseConfig';
 
-function createSpotifyPlaylist(userId, playlistName, navigate) {
+function createSpotifyPlaylist(userId, playlistName, navigate, props) {
   const accessCodeId = Math.random()
     .toString(36)
     .substr(2, 4);
@@ -30,7 +30,10 @@ function createSpotifyPlaylist(userId, playlistName, navigate) {
         playlistName,
         uri
       );
-      await navigate('/add');
+      console.log('ACCESS CODE >>>>>>', accessCodeId);
+      console.log(props);
+      // await navigate('/add');
+      await navigate(`/tuneroom/${accessCodeId}`);
     })
     .catch(error => {
       return error;

@@ -130,7 +130,7 @@ const AddSong = props => {
     console.log(documentOwnerId.data);
     console.log(documentPlaylistId.data);
     addTrack(documentOwnerId.data, documentPlaylistId.data, result);
-    // setTrackResults({ data: '' });
+    setTrackResults({ data: '' });
     // navigate(`/tuneroom/12354`);
   };
 

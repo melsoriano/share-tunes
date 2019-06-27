@@ -112,6 +112,7 @@ const Join = () => {
       await setMyAccessCode(searchQuery.code);
       await checkPlaylistExists(searchQuery.code);
       await localStorage.setItem('accessCode', searchQuery.code);
+      console.log(searchQuery.code);
     }
   };
 

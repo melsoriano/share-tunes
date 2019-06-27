@@ -4,6 +4,7 @@ import styled from 'styled-components';
 import { createSpotifyPlaylist } from '../api/spotify/spotifyApi';
 import { SpotifyApi } from '../api/spotify/spotifyConfig';
 import { theme, mixins, Section } from '../styles';
+import { SpotifyContext } from '../context/spotifyContext';
 
 const { fontSizes } = theme;
 
@@ -64,7 +65,7 @@ const CreateInputLabel = styled.label`
   pointer-events: none;
 `;
 
-const Create = () => {
+const Create = props => {
   const user = JSON.parse(localStorage.getItem('user'));
 
   const [playlist, setPlaylistName] = useState({
@@ -76,6 +77,7 @@ const Create = () => {
     if (user !== null) {
       SpotifyApi.setAccessToken(user.accessToken);
     }
+    console.log('create props', props);
   }, [user]);
 
   const handlePlaylistName = e => {
@@ -89,26 +91,33 @@ const Create = () => {
   };
 
   return (
-    <CreateContainer>
-      <CreateFieldSet>
-        <CreateInputField
-          type="text"
-          value={playlist.playlistName}
-          onChange={handlePlaylistName}
-          onKeyPress={handleKeyPress}
-          required
-        />
-        <CreateInputLabel>Enter Playlist Name</CreateInputLabel>
-      </CreateFieldSet>
-      <CreateButton
-        type="submit"
-        onClick={() =>
-          createSpotifyPlaylist(user.uid, playlist.playlistName, navigate)
-        }
-      >
-        CREATE PLAYLIST
-      </CreateButton>
-    </CreateContainer>
+    <>
+      <SpotifyContext.Consumer>
+        {value => (
+          <CreateContainer>
+            {console.log(value)}
+            <CreateFieldSet>
+              <CreateInputField
+                type="text"
+                value={playlist.playlistName}
+                onChange={handlePlaylistName}
+                onKeyPress={handleKeyPress}
+                required
+              />
+              <CreateInputLabel>Enter Playlist Name</CreateInputLabel>
+            </CreateFieldSet>
+            <CreateButton
+              type="submit"
+              onClick={() =>
+                createSpotifyPlaylist(user.uid, playlist.playlistName, navigate)
+              }
+            >
+              CREATE PLAYLIST
+            </CreateButton>
+          </CreateContainer>
+        )}
+      </SpotifyContext.Consumer>
+    </>
   );
 };
 

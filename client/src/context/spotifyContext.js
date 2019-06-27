@@ -21,10 +21,14 @@ export const SpotifyProvider = ({ children }) => {
   const [spotifyRefreshToken, setSpotifyRefreshToken] = useState({
     expiresIn: '',
   });
+  console.log('windoowwwww >>>>', window.location);
   useEffect(() => {
-    let urlAccessCode = window.location.pathname.split('/').pop();
-    setMyAccessCode(localStorage.getItem('accessCode'));
+    // let urlAccessCode = window.location.pathname.split('/').pop();
+    // // console.log('CONTEXT >>>>>>>>>>', window.location);
+    // console.log('______url access code >>>', window.location.pathname);
     async function fetchData() {
+      setMyAccessCode(localStorage.getItem('accessCode'));
+      console.log('my access code >>>>>>', myAccessCode);
       const playlistRef = db.doc(`playlists/${myAccessCode}`);
       playlistRef
         .get()
@@ -55,7 +59,8 @@ export const SpotifyProvider = ({ children }) => {
         });
     }
     fetchData();
-  }, [myAccessCode]);
+    console.log(window.location);
+  }, [window.location]);
 
   return (
     <SpotifyContext.Provider

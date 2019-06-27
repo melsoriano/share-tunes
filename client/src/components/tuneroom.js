@@ -63,9 +63,10 @@ const VoteText = styled.p`
   font-size: ${fontSizes.xsmall};
 `;
 
-function TuneRoom() {
+function TuneRoom(props) {
   const user = JSON.parse(localStorage.getItem('user'));
   const accessCode = localStorage.getItem('accessCode');
+  console.log('tuneroom access code>>>>', accessCode);
 
   const {
     documentUri,
@@ -83,6 +84,8 @@ function TuneRoom() {
     setDocumentState(documentState);
     // setLocalDocumentState(documentState);
     setLocalDocumentUri(documentUri.uri);
+
+    console.log('__DOC STATE____', documentState);
   }, [documentState, documentUri.uri, setDocumentState]);
 
   const [trackResults, setTrackResults] = useState({
@@ -147,6 +150,7 @@ function TuneRoom() {
 
   return (
     <TuneRoomContainer>
+      {console.log('document state >>>', documentState)}
       <PlaylistName>{documentPlaylistName.data}</PlaylistName>
       <PlayerContainer>
         <SpotifyPlayer token={user.accessToken} uris={`${localDocumentUri}`} />
