@@ -125,8 +125,11 @@ const AddSong = props => {
     setStateQuery({ query: e.target.value });
   };
 
-  const handleAddTrack = result => {
+  const handleAddTrack = async result => {
+    // console.log(localStorage.getItem('accessCode'));
+    let addSongAccessCode = localStorage.getItem('accessCode');
     // addStartingTrack(result, setMyAccessCode, setDocumentUri, navigate);
+    await setMyAccessCode(addSongAccessCode);
     addTrack(documentOwnerId.data, documentPlaylistId.data, result);
     setTrackResults({ data: '' });
   };
