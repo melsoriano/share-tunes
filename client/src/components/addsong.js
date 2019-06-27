@@ -129,6 +129,7 @@ const AddSong = props => {
     // addStartingTrack(result, setMyAccessCode, setDocumentUri, navigate);
     addTrack(documentOwnerId.data, documentPlaylistId.data, result);
     setTrackResults({ data: '' });
+    navigate('/tuneroom');
   };
 
   const handleKeyPress = e => {
