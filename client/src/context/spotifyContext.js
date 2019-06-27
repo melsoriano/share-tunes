@@ -22,8 +22,8 @@ export const SpotifyProvider = ({ children }) => {
     expiresIn: '',
   });
   useEffect(() => {
-    // alert('change', myAccessCode);
-    // setMyAccessCode(localStorage.getItem('accessCode'));
+    // this localStorage call allows tunes to persist through tuneroom refresh
+    setMyAccessCode(localStorage.getItem('accessCode'));
     async function fetchData() {
       const playlistRef = db.doc(`playlists/${myAccessCode}`);
       playlistRef
@@ -35,6 +35,7 @@ export const SpotifyProvider = ({ children }) => {
           await setDocumentOwnerId({ data: doc.data().ownerId });
           await setDocumentPlaylistId({ data: doc.data().playlistId });
           await setDocumentUri({ uri: doc.data().uri });
+          console.log(documentUri);
           await setDocumentPlaylistName({ data: doc.data().playlistName });
           await playlistRef.collection('tracks').onSnapshot(
             {

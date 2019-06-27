@@ -75,7 +75,9 @@ const Join = () => {
   const [searchQuery, setSearchQuery] = useState({ code: '' });
   const user = JSON.parse(localStorage.getItem('user'));
 
-  const { myAccessCode, setMyAccessCode } = useContext(SpotifyContext);
+  const { myAccessCode, setMyAccessCode, setDocumentUri } = useContext(
+    SpotifyContext
+  );
 
   useEffect(() => {
     console.log('myAccessCode /join:', myAccessCode);
@@ -87,16 +89,21 @@ const Join = () => {
   const checkPlaylistExists = code => {
     db.collection('playlists')
       .get()
-      .then(querySnapshot => {
+      .then(async querySnapshot => {
         let isMatch = false;
+        let documentUri = '';
         querySnapshot.forEach(doc => {
           if (doc.id === code) {
             isMatch = true;
+            documentUri = doc.data().uri;
           }
         });
         if (isMatch) {
           setFlashMessage(false);
-          navigate(`/tuneroom/${myAccessCode}`);
+          await setDocumentUri(documentUri);
+          await setMyAccessCode(searchQuery.code);
+          await localStorage.setItem('accessCode', searchQuery.code);
+          await navigate(`/tuneroom/${searchQuery.code}`);
         } else {
           setFlashMessage(true);
         }
@@ -110,9 +117,7 @@ const Join = () => {
   const handleKeyPress = async e => {
     if (e.key === 'Enter') {
       setSearchQuery({ code: e.target.value });
-      checkPlaylistExists(searchQuery.code);
-      setMyAccessCode(searchQuery.code);
-      localStorage.setItem('accessCode', searchQuery.code);
+      await checkPlaylistExists(searchQuery.code);
     }
   };
 
@@ -133,10 +138,8 @@ const Join = () => {
       </JoinFieldSet>
       <JoinButton
         type="submit"
-        onClick={() => {
-          checkPlaylistExists(searchQuery.code);
-          setMyAccessCode(searchQuery.code);
-          localStorage.setItem('accessCode', searchQuery.code);
+        onClick={async () => {
+          await checkPlaylistExists(searchQuery.code);
         }}
       >
         ENTER
