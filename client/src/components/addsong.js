@@ -122,16 +122,27 @@ const AddSong = props => {
   }, [documentOwnerId, user]);
 
   const search = e => {
+    console.log(documentOwnerId.data);
+    console.log(documentPlaylistId.data);
+    // console.log(result);
     setStateQuery({ query: e.target.value });
   };
 
   const handleAddTrack = async result => {
-    // console.log(localStorage.getItem('accessCode'));
-    let addSongAccessCode = localStorage.getItem('accessCode');
-    // addStartingTrack(result, setMyAccessCode, setDocumentUri, navigate);
-    await setMyAccessCode(addSongAccessCode);
-    addTrack(documentOwnerId.data, documentPlaylistId.data, result);
-    setTrackResults({ data: '' });
+    console.log('result: ', result);
+    console.log('this: ', documentPlaylistId.data);
+    // need to pass this all the way to addTrackDb method in firebaseApi
+    let accessCodeId = window.location.pathname.split('/').pop();
+    await addTrack(
+      documentOwnerId.data,
+      documentPlaylistId.data,
+      accessCodeId,
+      result
+    );
+    // await setTrackResults({ data: '' });
+    if (!window.location.pathname.includes('tuneroom')) {
+      await navigate(`/tuneroom/${accessCodeId}`);
+    }
   };
 
   const handleKeyPress = e => {

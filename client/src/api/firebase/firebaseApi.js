@@ -36,6 +36,7 @@ function getPlaylistFromDb(next) {
 }
 
 function addTrackToDb(track, accessCodeId) {
+  console.log('accessCodeId: ', accessCodeId);
   const playlistRef = db.doc(`playlists/${accessCodeId}`);
   playlistRef
     .collection('tracks')

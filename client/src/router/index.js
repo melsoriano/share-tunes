@@ -21,7 +21,7 @@ const ReactRouter = () => {
           <Home path="/" />
           <Create path="/create" />
           <Join path="/join" />
-          <AddSong path="/add" />
+          <AddSong path="/add/:accessCode" />
           {/* <TuneRoom path="/tuneroom" /> */}
           <TuneRoom path="/tuneroom/:code" />
         </Router>

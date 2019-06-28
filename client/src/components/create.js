@@ -73,7 +73,12 @@ const Create = () => {
     playlistName: '',
   });
 
-  const { myAccessCode, setMyAccessCode } = useContext(SpotifyContext);
+  const {
+    myAccessCode,
+    setMyAccessCode,
+    setDocumentPlaylistId,
+    setDocumentOwnerId,
+  } = useContext(SpotifyContext);
 
   useEffect(() => {
     localStorage.setItem('isLoading', false);
@@ -92,6 +97,8 @@ const Create = () => {
         user.uid,
         playlist.playlistName,
         setMyAccessCode,
+        setDocumentPlaylistId,
+        setDocumentOwnerId,
         navigate
       );
     }
@@ -116,6 +123,8 @@ const Create = () => {
             user.uid,
             playlist.playlistName,
             setMyAccessCode,
+            setDocumentPlaylistId,
+            setDocumentOwnerId,
             navigate
           )
         }
