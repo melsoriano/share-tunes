@@ -30,16 +30,17 @@ export const SpotifyProvider = ({ children }) => {
     }
     async function fetchData() {
       const playlistRef = db.doc(`playlists/${myAccessCode}`);
-      playlistRef
+      await playlistRef
         .get()
         .then(async doc => {
           if (!doc.exists) {
             return {};
           }
-          await setDocumentOwnerId({ data: doc.data().ownerId });
-          await setDocumentPlaylistId({ data: doc.data().playlistId });
-          await setDocumentUri({ uri: doc.data().uri });
-          await setDocumentPlaylistName({ data: doc.data().playlistName });
+          setDocumentOwnerId({ data: doc.data().ownerId });
+          setDocumentPlaylistId({ data: doc.data().playlistId });
+          setDocumentUri({ uri: doc.data().uri });
+          setDocumentPlaylistName({ data: doc.data().playlistName });
+
           await playlistRef
             .collection('tracks')
             .orderBy('votes', 'desc')
@@ -48,17 +49,18 @@ export const SpotifyProvider = ({ children }) => {
                 // Listen for document metadata changes
                 includeMetadataChanges: true,
               },
-              async snapDoc => {
+              snapDoc => {
                 const playlistArr = [];
                 snapDoc.docs.forEach(item => {
                   playlistArr.push(item.data());
                 });
-                await setDocumentState(playlistArr);
+                setDocumentState(playlistArr);
               }
             );
         })
         .catch(err => {
           console.log(err);
+          return err;
         });
     }
     fetchData();

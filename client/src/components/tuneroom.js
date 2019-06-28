@@ -1,9 +1,8 @@
 import React, { useState, useContext, useEffect, Fragment } from 'react';
-import { Link } from '@reach/router';
+import { Link, navigate, Redirect } from '@reach/router';
 import SpotifyPlayer from 'react-spotify-web-playback';
 import axios from 'axios';
 import styled from 'styled-components';
-import { navigate } from '@reach/router/lib/history';
 import { SpotifyContext } from '../context/spotifyContext';
 import { SpotifyApi } from '../api/spotify/spotifyConfig';
 import { reorderTrack } from '../api/spotify/spotifyApi';
@@ -12,7 +11,6 @@ import { vote } from '../api/firebase/firebaseApi';
 import { theme, mixins } from '../styles';
 
 import AddSong from './addsong';
-import { navigate } from '@reach/router/lib/history';
 
 const { fonts, fontSizes, colors } = theme;
 
@@ -65,7 +63,7 @@ const VoteText = styled.p`
   font-size: ${fontSizes.xsmall};
 `;
 
-function TuneRoom() {
+function TuneRoom(props) {
   const user = JSON.parse(localStorage.getItem('user'));
   const accessCode = localStorage.getItem('accessCode');
 
@@ -91,18 +89,16 @@ function TuneRoom() {
   });
 
   const [votedTracks, setVotedTracks] = useState({ results: [] });
-  const [voteCount, setVoteCount] = useState();
 
   useEffect(() => {
     async function getRefreshToken() {
       try {
-        return await axios.post('/auth/refresh_token', user).then(response => {
-          console.log(response);
-          const { access_token, refresh_token } = response.data;
+        const response = await axios.post('/auth/refresh_token', user);
 
-          SpotifyApi.setAccessToken(access_token);
-          SpotifyApi.setRefreshToken(refresh_token);
-        });
+        SpotifyApi.setAccessToken(response.data.access_token);
+        SpotifyApi.setRefreshToken(response.data.refresh_token);
+
+        return response;
       } catch (error) {
         if (error.response) {
           console.log(error.response);
@@ -134,10 +130,8 @@ function TuneRoom() {
           JSON.stringify({ uid: doc.id, ...doc.data() })
         );
       });
-    // Reordering tracks when component loads
-    if (documentPlaylistId.data !== '') {
-      // console.log(documentPlaylistId.data);
 
+    if (documentPlaylistId.data !== '') {
       reorderTrack(documentPlaylistId.data, accessCode, documentOwnerId.data);
     }
   }, [
@@ -145,6 +139,7 @@ function TuneRoom() {
     documentOwnerId,
     documentPlaylistId,
     documentState,
+    props,
     user.uid,
   ]);
 
@@ -152,28 +147,33 @@ function TuneRoom() {
     if (!votedTracks.results.includes(trackUri)) {
       vote(trackUri, accessCode, documentPlaylistId);
       setVotedTracks({ results: [...votedTracks.results, trackUri] });
-
-      // let filterVotes = documentState.forEach(item => item.uri === trackUri);
-      // console.log(filterVotes);
-      // setVoteCount(filterVotes);
       reorderTrack(documentPlaylistId.data, accessCode, documentOwnerId.data);
     }
-    // Reordering tracks when someone votes
   };
+
+  const trackUri = documentState.map(track => track.uri);
 
   return (
     <TuneRoomContainer>
       <Link to="/join">Join Different Tuneroom</Link>
       <PlaylistName>{documentPlaylistName.data}</PlaylistName>
-      <PlayerContainer>
-        <SpotifyPlayer
-          token={user.accessToken}
-          uris={documentState.map(track => track.uri)}
-          autoPlay
-          syncExternalDeviceInterval={1}
-        />
-      </PlayerContainer>
-      {documentState !== '' ? (
+      {console.log(documentState)}
+      {console.log(documentState.length > 0)}
+      {documentState.length > 0 && (
+        <PlayerContainer>
+          <SpotifyPlayer
+            token={user.accessToken}
+            uris={trackUri}
+            name="Share Tunes Player"
+            autoPlay
+            syncExternalDeviceInterval={1}
+            callback={state => {
+              console.log(state);
+            }}
+          />
+        </PlayerContainer>
+      )}
+      {documentState.length > 0 ? (
         documentState.map((result, i) => {
           return (
             <Fragment>

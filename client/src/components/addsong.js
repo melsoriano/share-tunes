@@ -105,13 +105,14 @@ const AddSong = props => {
   const [trackResults, setTrackResults] = useState({
     data: '',
   });
-  const { path } = props;
+  const { path, code } = props;
 
   const {
     setMyAccessCode,
     setDocumentUri,
     documentOwnerId,
     documentPlaylistId,
+    setDocumentState,
   } = useContext(SpotifyContext);
 
   SpotifyApi.setAccessToken(user.accessToken);
@@ -124,10 +125,11 @@ const AddSong = props => {
   const search = e => {
     setStateQuery({ query: e.target.value });
   };
+  const [initialTracks, setInitialTracks] = useState([]);
+  const accessCodeId = window.location.pathname.split('/').pop();
 
   const handleAddTrack = async result => {
     // need to pass this all the way to addTrackDb method in firebaseApi
-    let accessCodeId = window.location.pathname.split('/').pop();
 
     await addTrack(
       documentOwnerId.data,
@@ -135,9 +137,13 @@ const AddSong = props => {
       accessCodeId,
       result
     );
-    if (!window.location.pathname.includes('tuneroom')) {
-      await navigate(`/tuneroom/${accessCodeId}`);
+    setInitialTracks([result, ...initialTracks]);
+
+    if (accessCodeId === code && initialTracks.length >= 1) {
+      await setDocumentState([result, ...initialTracks]);
+      await navigate(`/tuneroom/${accessCodeId},`, { state: result });
     }
+    setStateQuery({ query: '' });
   };
 
   const handleKeyPress = e => {
@@ -148,8 +154,8 @@ const AddSong = props => {
 
   return (
     <AddContainer>
-      {path === '/add' && (
-        <AddTrackTitle>Add a song to launch your playlist!</AddTrackTitle>
+      {path === `/add/${accessCodeId}` && (
+        <AddTrackTitle>Go ahead and add a couple (2) songs!</AddTrackTitle>
       )}
 
       {/** SEARCH FOR A SONG */}

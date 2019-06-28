@@ -84,7 +84,7 @@ const Join = () => {
     if (user !== null) {
       SpotifyApi.setAccessToken(user.accessToken);
     }
-  }, [user]);
+  }, [myAccessCode, user]);
 
   const checkPlaylistExists = code => {
     db.collection('playlists')

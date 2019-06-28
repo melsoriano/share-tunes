@@ -1,4 +1,4 @@
-import React, { useContext, Fragment } from 'react';
+import React, { useContext } from 'react';
 import { Router, Link } from '@reach/router';
 import styled, { ThemeProvider } from 'styled-components';
 import GlobalStyle from '../styles/GlobalStyle';
@@ -15,7 +15,7 @@ const ReactRouter = () => {
   // ThemeProvider gets mode from the context wrapper and passes it down to the rest of the application through the outer router component. Since this can't be done in around the root <App /> component, the router component will serve as it's 'proxy'
   return (
     <ThemeProvider theme={mode}>
-      <Fragment>
+      <>
         <GlobalStyle />
         <Router>
           <Home path="/" />
@@ -25,7 +25,7 @@ const ReactRouter = () => {
           {/* <TuneRoom path="/tuneroom" /> */}
           <TuneRoom path="/tuneroom/:code" />
         </Router>
-      </Fragment>
+      </>
     </ThemeProvider>
   );
 };
