@@ -122,15 +122,10 @@ const AddSong = props => {
   }, [documentOwnerId, user]);
 
   const search = e => {
-    console.log(documentOwnerId.data);
-    console.log(documentPlaylistId.data);
-    // console.log(result);
     setStateQuery({ query: e.target.value });
   };
 
   const handleAddTrack = async result => {
-    console.log('result: ', result);
-    console.log('this: ', documentPlaylistId.data);
     // need to pass this all the way to addTrackDb method in firebaseApi
     let accessCodeId = window.location.pathname.split('/').pop();
     await addTrack(
@@ -139,7 +134,6 @@ const AddSong = props => {
       accessCodeId,
       result
     );
-    // await setTrackResults({ data: '' });
     if (!window.location.pathname.includes('tuneroom')) {
       await navigate(`/tuneroom/${accessCodeId}`);
     }

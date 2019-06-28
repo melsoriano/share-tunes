@@ -28,7 +28,6 @@ export const SpotifyProvider = ({ children }) => {
     } else {
       setMyAccessCode(window.location.pathname.split('/').pop());
     }
-    let urlCode = window.location.pathname.split('/').pop();
     async function fetchData() {
       const playlistRef = db.doc(`playlists/${myAccessCode}`);
       playlistRef

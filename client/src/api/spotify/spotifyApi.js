@@ -63,10 +63,6 @@ function searchTracks(query, setTrackResults) {
 }
 
 function addTrack(ownerId, playlistId, accessCodeId, track) {
-  console.log('track: ', track);
-  console.log('ownerId: ', ownerId);
-  console.log('accessCodeID: ', accessCodeId);
-  console.log('track: ', track);
   db.doc(`users/${ownerId}`)
     .get()
     .then(doc => {
@@ -85,7 +81,6 @@ function addTrack(ownerId, playlistId, accessCodeId, track) {
           )
           .then(response => {
             if (response.status === 201) {
-              const accessCode = localStorage.getItem('accessCode');
               addTrackToDb(track, accessCodeId);
             }
           })
