@@ -127,7 +127,8 @@ const AddSong = props => {
 
   const handleAddTrack = async result => {
     // need to pass this all the way to addTrackDb method in firebaseApi
-    const accessCodeId = window.location.pathname.split('/').pop();
+    let accessCodeId = window.location.pathname.split('/').pop();
+
     await addTrack(
       documentOwnerId.data,
       documentPlaylistId.data,

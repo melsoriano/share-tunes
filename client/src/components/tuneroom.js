@@ -12,6 +12,7 @@ import { vote } from '../api/firebase/firebaseApi';
 import { theme, mixins } from '../styles';
 
 import AddSong from './addsong';
+import { navigate } from '@reach/router/lib/history';
 
 const { fonts, fontSizes, colors } = theme;
 
