@@ -100,7 +100,7 @@ const AddButton = styled.button`
 `;
 
 const AddSong = props => {
-  const [stateQuery, setStateQuery] = useState('');
+  const [stateQuery, setStateQuery] = useState({ query: '' });
   const user = JSON.parse(localStorage.getItem('user'));
   const [trackResults, setTrackResults] = useState({
     data: '',
@@ -128,6 +128,7 @@ const AddSong = props => {
   const handleAddTrack = async result => {
     // need to pass this all the way to addTrackDb method in firebaseApi
     let accessCodeId = window.location.pathname.split('/').pop();
+
     await addTrack(
       documentOwnerId.data,
       documentPlaylistId.data,

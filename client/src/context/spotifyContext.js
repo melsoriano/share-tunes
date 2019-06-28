@@ -40,19 +40,22 @@ export const SpotifyProvider = ({ children }) => {
           await setDocumentPlaylistId({ data: doc.data().playlistId });
           await setDocumentUri({ uri: doc.data().uri });
           await setDocumentPlaylistName({ data: doc.data().playlistName });
-          await playlistRef.collection('tracks').onSnapshot(
-            {
-              // Listen for document metadata changes
-              includeMetadataChanges: true,
-            },
-            async snapDoc => {
-              const playlistArr = [];
-              snapDoc.docs.forEach(item => {
-                playlistArr.push(item.data());
-              });
-              await setDocumentState(playlistArr);
-            }
-          );
+          await playlistRef
+            .collection('tracks')
+            .orderBy('votes', 'desc')
+            .onSnapshot(
+              {
+                // Listen for document metadata changes
+                includeMetadataChanges: true,
+              },
+              async snapDoc => {
+                const playlistArr = [];
+                snapDoc.docs.forEach(item => {
+                  playlistArr.push(item.data());
+                });
+                await setDocumentState(playlistArr);
+              }
+            );
         })
         .catch(err => {
           console.log(err);

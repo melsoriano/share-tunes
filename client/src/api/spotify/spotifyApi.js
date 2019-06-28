@@ -114,7 +114,6 @@ function addStartingTrack(track, setMyAccessCode, setDocumentUri, navigate) {
 // REORDERING ALGORITHM
 function reorderTrack(documentPlaylistId, accessCode, ownerId) {
   const uriByHighestVotes = [];
-  let nextTrackIndex;
   // get the playlist from firestore, to check for song with most votes
   db.doc(`playlists/${accessCode}`)
     .collection('tracks')
@@ -130,35 +129,23 @@ function reorderTrack(documentPlaylistId, accessCode, ownerId) {
       // Get the playlist owner's id to get token
       db.doc(`users/${ownerId}`)
         .get()
-        .then(doc => {
-          const { accessToken } = doc.data();
+        .then(async doc => {
+          const { accessToken } = await doc.data();
 
-          SpotifyApi.getPlaylistTracks(documentPlaylistId).then(data => {
-            const trackList = data.body.items;
-            trackList.map((trackData, trackIndex) => {
-              const { uri } = trackData.track;
-              // nextTrackIndex` represents where in the Array the ranked tracks should go based on vote count
-              nextTrackIndex = uriByHighestVotes.indexOf(uri);
-
-              if (nextTrackIndex !== -1 && documentPlaylistId !== undefined) {
-                axios
-                  .put(
-                    `https://api.spotify.com/v1/playlists/${documentPlaylistId}/tracks`,
-                    { range_start: trackIndex, insert_before: nextTrackIndex },
-                    {
-                      headers: {
-                        Authorization: `Bearer ${accessToken}`,
-                        'Content-Type': 'application/json;charset`UTF-8',
-                      },
-                    }
-                  )
-                  .then(data => {
-                    console.log(data);
-                  })
-                  .catch(error => error);
+          await axios
+            .put(
+              `https://api.spotify.com/v1/playlists/${documentPlaylistId}/tracks`,
+              {
+                uris: uriByHighestVotes,
+              },
+              {
+                headers: {
+                  Authorization: `Bearer ${accessToken}`,
+                  'Content-Type': 'application/json;charset`UTF-8',
+                },
               }
-            });
-          });
+            )
+            .catch(error => console.log(error));
         });
     });
 }
@@ -170,3 +157,40 @@ export {
   addStartingTrack,
   reorderTrack,
 };
+
+// SpotifyApi.getPlaylistTracks(documentPlaylistId).then(
+//   responseData => {
+//     const trackList = responseData.body.items;
+//     trackList.map((trackData, trackIndex) => {
+//       const { uri } = trackData.track;
+//       // nextTrackIndex` represents where in the Array the ranked tracks should go based on vote count
+//       nextTrackIndex = uriByHighestVotes.indexOf(uri);
+
+//       if (
+//         nextTrackIndex !== -1 &&
+//         documentPlaylistId !== undefined &&
+//         nextTrackIndex !== trackIndex
+//       ) {
+//         axios
+//           .put(
+//             `https://api.spotify.com/v1/playlists/${documentPlaylistId}/tracks`,
+//             {
+//               range_start: trackIndex,
+//               insert_before: nextTrackIndex,
+//             },
+//             {
+//               headers: {
+//                 Authorization: `Bearer ${accessToken}`,
+//                 'Content-Type': 'application/json;charset`UTF-8',
+//               },
+//             }
+//           )
+//           .then(response => {
+//             console.log('res >>', response);
+//             snapshotId.push(response.data);
+//           })
+//           .catch(error => console.log(error));
+//       }
+//     });
+//   }
+// );

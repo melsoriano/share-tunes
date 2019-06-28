@@ -3,6 +3,7 @@ import { Link } from '@reach/router';
 import SpotifyPlayer from 'react-spotify-web-playback';
 import axios from 'axios';
 import styled from 'styled-components';
+import { navigate } from '@reach/router/lib/history';
 import { SpotifyContext } from '../context/spotifyContext';
 import { SpotifyApi } from '../api/spotify/spotifyConfig';
 import { reorderTrack } from '../api/spotify/spotifyApi';
@@ -93,19 +94,29 @@ function TuneRoom() {
   const [voteCount, setVoteCount] = useState();
 
   useEffect(() => {
-    function getRefreshToken() {
-      axios
-        .post('/auth/refresh_token', user)
-        .then(response => {
+    async function getRefreshToken() {
+      try {
+        return await axios.post('/auth/refresh_token', user).then(response => {
+          console.log(response);
           const { access_token, refresh_token } = response.data;
 
           SpotifyApi.setAccessToken(access_token);
           SpotifyApi.setRefreshToken(refresh_token);
-        })
-        .catch(err => {
-          return err;
         });
+      } catch (error) {
+        if (error.response) {
+          console.log(error.response);
+          return error.response;
+        }
+        if (error.request) {
+          console.log(error.request);
+          return error.request;
+        }
+        console.log(error.message);
+        return error.message;
+      }
     }
+
     // getRefreshToken();
     setInterval(() => {
       getRefreshToken();
@@ -124,25 +135,30 @@ function TuneRoom() {
         );
       });
     // Reordering tracks when component loads
-    // if (documentPlaylistId.data !== '') {
-    //   // console.log(documentPlaylistId.data);
-    //   reorderTrack(documentPlaylistId.data, accessCode, documentOwnerId.data);
-    // }
-  }, [accessCode, documentOwnerId, documentPlaylistId, user.uid]);
+    if (documentPlaylistId.data !== '') {
+      // console.log(documentPlaylistId.data);
+
+      reorderTrack(documentPlaylistId.data, accessCode, documentOwnerId.data);
+    }
+  }, [
+    accessCode,
+    documentOwnerId,
+    documentPlaylistId,
+    documentState,
+    user.uid,
+  ]);
 
   const handleVote = trackUri => {
     if (!votedTracks.results.includes(trackUri)) {
       vote(trackUri, accessCode, documentPlaylistId);
       setVotedTracks({ results: [...votedTracks.results, trackUri] });
 
-      const filterVotes = documentState.forEach(
-        item => item.uri === trackUri && item.votes++
-      );
-      setVoteCount(filterVotes);
+      // let filterVotes = documentState.forEach(item => item.uri === trackUri);
+      // console.log(filterVotes);
+      // setVoteCount(filterVotes);
+      reorderTrack(documentPlaylistId.data, accessCode, documentOwnerId.data);
     }
     // Reordering tracks when someone votes
-
-    reorderTrack(documentPlaylistId.data, accessCode, documentOwnerId.data);
   };
 
   return (
@@ -152,41 +168,40 @@ function TuneRoom() {
       <PlayerContainer>
         <SpotifyPlayer
           token={user.accessToken}
-          uris={`${localPlaylistUri.uri}`}
+          uris={documentState.map(track => track.uri)}
+          autoPlay
+          syncExternalDeviceInterval={1}
         />
-        {console.log('documentUri in component >>>>> ', localPlaylistUri)}
       </PlayerContainer>
       {documentState !== '' ? (
-        documentState
-          .sort((a, b) => b.votes - a.votes)
-          .map((result, i) => {
-            return (
-              <Fragment>
-                {i === 0 && <h2>Up Next:</h2>}
-                <TracksContainer key={i}>
-                  <TrackInfoContainer>
-                    <TrackImageContainer>
-                      <img src={result.album.images[2].url} alt="album-cover" />
-                    </TrackImageContainer>
-                    <TrackText>
-                      {result.name}
-                      <br />
-                      {result.artists[0].name}
-                    </TrackText>
-                  </TrackInfoContainer>
-                  <VoteContainer>
-                    <button
-                      type="submit"
-                      onClick={() => handleVote(result.uri, documentUri)}
-                    >
-                      vote
-                    </button>
-                    <VoteText>{result.votes} Votes</VoteText>
-                  </VoteContainer>
-                </TracksContainer>
-              </Fragment>
-            );
-          })
+        documentState.map((result, i) => {
+          return (
+            <Fragment>
+              {i === 1 && <h2>Up Next:</h2>}
+              <TracksContainer key={i}>
+                <TrackInfoContainer>
+                  <TrackImageContainer>
+                    <img src={result.album.images[2].url} alt="album-cover" />
+                  </TrackImageContainer>
+                  <TrackText>
+                    {result.name}
+                    <br />
+                    {result.artists[0].name}
+                  </TrackText>
+                </TrackInfoContainer>
+                <VoteContainer>
+                  <button
+                    type="submit"
+                    onClick={() => handleVote(result.uri, documentUri)}
+                  >
+                    vote
+                  </button>
+                  <VoteText>{result.votes} Votes</VoteText>
+                </VoteContainer>
+              </TracksContainer>
+            </Fragment>
+          );
+        })
       ) : (
         <div>
           <h2>
