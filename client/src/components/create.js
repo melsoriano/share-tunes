@@ -78,6 +78,8 @@ const Create = () => {
     setMyAccessCode,
     setDocumentPlaylistId,
     setDocumentOwnerId,
+    setDocumentPlaylistName,
+    setDocumentUri,
   } = useContext(SpotifyContext);
 
   useEffect(() => {
@@ -99,6 +101,8 @@ const Create = () => {
         setMyAccessCode,
         setDocumentPlaylistId,
         setDocumentOwnerId,
+        setDocumentPlaylistName,
+        setDocumentUri,
         navigate
       );
     }
@@ -125,6 +129,8 @@ const Create = () => {
             setMyAccessCode,
             setDocumentPlaylistId,
             setDocumentOwnerId,
+            setDocumentPlaylistName,
+            setDocumentUri,
             navigate
           )
         }

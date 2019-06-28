@@ -13,6 +13,8 @@ function createSpotifyPlaylist(
   setMyAccessCode,
   setDocumentPlaylistId,
   setDocumentOwnerId,
+  setDocumentPlaylistName,
+  setDocumentUri,
   navigate
 ) {
   const accessCodeId = Math.random()
@@ -38,8 +40,11 @@ function createSpotifyPlaylist(
         playlistName,
         uri
       );
+      // after playlist creation, we need to set this in context to pass throughout the app
       await setDocumentPlaylistId({ data: playlistId });
       await setDocumentOwnerId({ data: ownerId });
+      await setDocumentPlaylistName({ data: playlistName });
+      await setDocumentUri({ uri });
     })
     .then(navigate(`/add/${accessCodeId}`))
     .catch(error => {
