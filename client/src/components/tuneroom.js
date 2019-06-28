@@ -67,6 +67,8 @@ function TuneRoom() {
   const user = JSON.parse(localStorage.getItem('user'));
   const accessCode = localStorage.getItem('accessCode');
 
+  const [localPlaylistUri, setLocalPlaylistUri] = useState('');
+
   const {
     documentUri,
     documentPlaylistId,
@@ -77,15 +79,10 @@ function TuneRoom() {
     myAccessCode,
   } = useContext(SpotifyContext);
 
-  const [localDocumentUri, setLocalDocumentUri] = useState(documentUri);
-  // const [localDocumentState, setLocalDocumentState] = useState(documentState);
-
   useEffect(() => {
-    console.log('myAccessCode /tuneroom: ', myAccessCode);
     setDocumentState(documentState);
-    // setLocalDocumentState(documentState);
-    setLocalDocumentUri(documentUri.uri);
-  }, [documentState, documentUri.uri, setDocumentState]);
+    setLocalPlaylistUri(documentUri);
+  }, [documentState, documentUri, setDocumentState]);
 
   const [trackResults, setTrackResults] = useState({
     data: '',
@@ -151,7 +148,11 @@ function TuneRoom() {
     <TuneRoomContainer>
       <PlaylistName>{documentPlaylistName.data}</PlaylistName>
       <PlayerContainer>
-        <SpotifyPlayer token={user.accessToken} uris={`${localDocumentUri}`} />
+        <SpotifyPlayer
+          token={user.accessToken}
+          uris={`${localPlaylistUri.uri}`}
+        />
+        {console.log('documentUri in component >>>>> ', localPlaylistUri)}
       </PlayerContainer>
       {documentState !== '' ? (
         documentState
