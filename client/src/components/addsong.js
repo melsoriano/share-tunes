@@ -100,7 +100,7 @@ const AddButton = styled.button`
 `;
 
 const AddSong = props => {
-  const [stateQuery, setStateQuery] = useState('');
+  const [stateQuery, setStateQuery] = useState({ query: '' });
   const user = JSON.parse(localStorage.getItem('user'));
   const [trackResults, setTrackResults] = useState({
     data: '',
@@ -127,7 +127,7 @@ const AddSong = props => {
 
   const handleAddTrack = async result => {
     // console.log(localStorage.getItem('accessCode'));
-    let addSongAccessCode = localStorage.getItem('accessCode');
+    const addSongAccessCode = localStorage.getItem('accessCode');
     // addStartingTrack(result, setMyAccessCode, setDocumentUri, navigate);
     await setMyAccessCode(addSongAccessCode);
     addTrack(documentOwnerId.data, documentPlaylistId.data, result);

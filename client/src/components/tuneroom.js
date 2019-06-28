@@ -92,19 +92,29 @@ function TuneRoom() {
   const [voteCount, setVoteCount] = useState();
 
   useEffect(() => {
-    function getRefreshToken() {
-      axios
-        .post('/auth/refresh_token', user)
-        .then(response => {
+    async function getRefreshToken() {
+      try {
+        return await axios.post('/auth/refresh_token', user).then(response => {
+          console.log(response);
           const { access_token, refresh_token } = response.data;
 
           SpotifyApi.setAccessToken(access_token);
           SpotifyApi.setRefreshToken(refresh_token);
-        })
-        .catch(err => {
-          return err;
         });
+      } catch (error) {
+        if (error.response) {
+          console.log(error.response);
+          return error.response;
+        }
+        if (error.request) {
+          console.log(error.request);
+          return error.request;
+        }
+        console.log(error.message);
+        return error.message;
+      }
     }
+
     // getRefreshToken();
     setInterval(() => {
       getRefreshToken();
@@ -123,10 +133,11 @@ function TuneRoom() {
         );
       });
     // Reordering tracks when component loads
-    // if (documentPlaylistId.data !== '') {
-    //   // console.log(documentPlaylistId.data);
-    //   reorderTrack(documentPlaylistId.data, accessCode, documentOwnerId.data);
-    // }
+    if (documentPlaylistId.data !== '') {
+      // console.log(documentPlaylistId.data);
+
+      reorderTrack(documentPlaylistId.data, accessCode, documentOwnerId.data);
+    }
   }, [accessCode, documentOwnerId, documentPlaylistId, user.uid]);
 
   const handleVote = trackUri => {
@@ -134,10 +145,9 @@ function TuneRoom() {
       vote(trackUri, accessCode, documentPlaylistId);
       setVotedTracks({ results: [...votedTracks.results, trackUri] });
 
-      const filterVotes = documentState.forEach(
-        item => item.uri === trackUri && item.votes++
-      );
-      setVoteCount(filterVotes);
+      // let filterVotes = documentState.forEach(item => item.uri === trackUri);
+      // console.log(filterVotes);
+      // setVoteCount(filterVotes);
     }
     // Reordering tracks when someone votes
 
@@ -152,7 +162,6 @@ function TuneRoom() {
           token={user.accessToken}
           uris={`${localPlaylistUri.uri}`}
         />
-        {console.log('documentUri in component >>>>> ', localPlaylistUri)}
       </PlayerContainer>
       {documentState !== '' ? (
         documentState
