@@ -11,6 +11,10 @@ function createSpotifyPlaylist(
   userId,
   playlistName,
   setMyAccessCode,
+  setDocumentPlaylistId,
+  setDocumentOwnerId,
+  setDocumentPlaylistName,
+  setDocumentUri,
   navigate
 ) {
   const accessCodeId = Math.random()
@@ -36,8 +40,13 @@ function createSpotifyPlaylist(
         playlistName,
         uri
       );
+      // after playlist creation, we need to set this in context to pass throughout the app
+      await setDocumentPlaylistId({ data: playlistId });
+      await setDocumentOwnerId({ data: ownerId });
+      await setDocumentPlaylistName({ data: playlistName });
+      await setDocumentUri({ uri });
     })
-    .then(navigate(`/tuneroom/${accessCodeId}`))
+    .then(navigate(`/add/${accessCodeId}`))
     .catch(error => {
       return error;
     });
@@ -53,7 +62,7 @@ function searchTracks(query, setTrackResults) {
     });
 }
 
-function addTrack(ownerId, playlistId, track) {
+function addTrack(ownerId, playlistId, accessCodeId, track) {
   db.doc(`users/${ownerId}`)
     .get()
     .then(doc => {
@@ -72,8 +81,7 @@ function addTrack(ownerId, playlistId, track) {
           )
           .then(response => {
             if (response.status === 201) {
-              const accessCode = localStorage.getItem('accessCode');
-              addTrackToDb(track, accessCode);
+              addTrackToDb(track, accessCodeId);
             }
           })
           .catch(error => error);

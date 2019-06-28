@@ -99,9 +99,11 @@ const Join = () => {
           }
         });
         if (isMatch) {
+          console.log(documentUri);
           setFlashMessage(false);
-          await setDocumentUri(documentUri);
+          await setDocumentUri({ data: documentUri });
           await setMyAccessCode(searchQuery.code);
+
           await localStorage.setItem('accessCode', searchQuery.code);
           await navigate(`/tuneroom/${searchQuery.code}`);
         } else {

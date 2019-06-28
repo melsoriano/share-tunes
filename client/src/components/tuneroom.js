@@ -3,6 +3,7 @@ import { Link } from '@reach/router';
 import SpotifyPlayer from 'react-spotify-web-playback';
 import axios from 'axios';
 import styled from 'styled-components';
+import { navigate } from '@reach/router/lib/history';
 import { SpotifyContext } from '../context/spotifyContext';
 import { SpotifyApi } from '../api/spotify/spotifyConfig';
 import { reorderTrack } from '../api/spotify/spotifyApi';
@@ -138,7 +139,13 @@ function TuneRoom() {
 
       reorderTrack(documentPlaylistId.data, accessCode, documentOwnerId.data);
     }
-  }, [accessCode, documentOwnerId, documentPlaylistId, user.uid]);
+  }, [
+    accessCode,
+    documentOwnerId,
+    documentPlaylistId,
+    documentState,
+    user.uid,
+  ]);
 
   const handleVote = trackUri => {
     if (!votedTracks.results.includes(trackUri)) {
@@ -148,52 +155,52 @@ function TuneRoom() {
       // let filterVotes = documentState.forEach(item => item.uri === trackUri);
       // console.log(filterVotes);
       // setVoteCount(filterVotes);
+      reorderTrack(documentPlaylistId.data, accessCode, documentOwnerId.data);
     }
     // Reordering tracks when someone votes
-
-    reorderTrack(documentPlaylistId.data, accessCode, documentOwnerId.data);
   };
 
   return (
     <TuneRoomContainer>
+      <Link to="/join">Join Different Tuneroom</Link>
       <PlaylistName>{documentPlaylistName.data}</PlaylistName>
       <PlayerContainer>
         <SpotifyPlayer
           token={user.accessToken}
-          uris={`${localPlaylistUri.uri}`}
+          uris={documentState.map(track => track.uri)}
+          autoPlay
+          syncExternalDeviceInterval={1}
         />
       </PlayerContainer>
       {documentState !== '' ? (
-        documentState
-          .sort((a, b) => b.votes - a.votes)
-          .map((result, i) => {
-            return (
-              <Fragment>
-                {i === 0 && <h2>Up Next:</h2>}
-                <TracksContainer key={i}>
-                  <TrackInfoContainer>
-                    <TrackImageContainer>
-                      <img src={result.album.images[2].url} alt="album-cover" />
-                    </TrackImageContainer>
-                    <TrackText>
-                      {result.name}
-                      <br />
-                      {result.artists[0].name}
-                    </TrackText>
-                  </TrackInfoContainer>
-                  <VoteContainer>
-                    <button
-                      type="submit"
-                      onClick={() => handleVote(result.uri, documentUri)}
-                    >
-                      vote
-                    </button>
-                    <VoteText>{result.votes} Votes</VoteText>
-                  </VoteContainer>
-                </TracksContainer>
-              </Fragment>
-            );
-          })
+        documentState.map((result, i) => {
+          return (
+            <Fragment>
+              {i === 1 && <h2>Up Next:</h2>}
+              <TracksContainer key={i}>
+                <TrackInfoContainer>
+                  <TrackImageContainer>
+                    <img src={result.album.images[2].url} alt="album-cover" />
+                  </TrackImageContainer>
+                  <TrackText>
+                    {result.name}
+                    <br />
+                    {result.artists[0].name}
+                  </TrackText>
+                </TrackInfoContainer>
+                <VoteContainer>
+                  <button
+                    type="submit"
+                    onClick={() => handleVote(result.uri, documentUri)}
+                  >
+                    vote
+                  </button>
+                  <VoteText>{result.votes} Votes</VoteText>
+                </VoteContainer>
+              </TracksContainer>
+            </Fragment>
+          );
+        })
       ) : (
         <div>
           <h2>
