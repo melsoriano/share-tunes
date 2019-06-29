@@ -1,11 +1,7 @@
 import React, { useState, useContext, useEffect } from 'react';
 import { navigate } from '@reach/router';
 import styled from 'styled-components';
-import {
-  searchTracks,
-  addStartingTrack,
-  addTrack,
-} from '../api/spotify/spotifyApi';
+import { searchTracks, addTrack } from '../api/spotify/spotifyApi';
 import { SpotifyApi } from '../api/spotify/spotifyConfig';
 import { SpotifyContext } from '../context/spotifyContext';
 
@@ -21,7 +17,7 @@ const AddContainer = styled.div`
 `;
 
 const SearchButton = styled.button`
-  ${mixins.customButton};
+  ${mixins.bigButton};
 `;
 
 const AddFieldSet = styled.fieldset`
@@ -93,10 +89,7 @@ const ListItem = styled.li`
 `;
 
 const AddButton = styled.button`
-  background: transparent;
-  border: 1px solid ${props => props.theme.colors.buttonFill};
-  border-radius: 255px;
-  color: ${props => props.theme.colors.buttonFill};
+  ${mixins.smallButton};
 `;
 
 const AddSong = props => {
@@ -141,7 +134,7 @@ const AddSong = props => {
 
     if (accessCodeId === code && initialTracks.length >= 1) {
       await setDocumentState([result, ...initialTracks]);
-      await navigate(`/tuneroom/${accessCodeId},`, { state: result });
+      await navigate(`/tuneroom/${accessCodeId}`, { state: result });
     }
     setStateQuery({ query: '' });
   };

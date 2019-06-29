@@ -21,48 +21,54 @@ export const SpotifyProvider = ({ children }) => {
   const [spotifyRefreshToken, setSpotifyRefreshToken] = useState({
     expiresIn: '',
   });
-  useEffect(() => {
-    // this localStorage call allows tunes to persist through tuneroom refresh
-    if (window.location.pathname == '/') {
-      setMyAccessCode('default');
-    } else {
-      setMyAccessCode(window.location.pathname.split('/').pop());
-    }
-    async function fetchData() {
-      const playlistRef = db.doc(`playlists/${myAccessCode}`);
-      await playlistRef
-        .get()
-        .then(async doc => {
-          if (!doc.exists) {
-            return {};
-          }
-          setDocumentOwnerId({ data: doc.data().ownerId });
-          setDocumentPlaylistId({ data: doc.data().playlistId });
-          setDocumentUri({ uri: doc.data().uri });
-          setDocumentPlaylistName({ data: doc.data().playlistName });
 
-          await playlistRef
-            .collection('tracks')
-            .orderBy('votes', 'desc')
-            .onSnapshot(
-              {
-                // Listen for document metadata changes
-                includeMetadataChanges: true,
-              },
-              snapDoc => {
-                const playlistArr = [];
-                snapDoc.docs.forEach(item => {
-                  playlistArr.push(item.data());
-                });
-                setDocumentState(playlistArr);
-              }
-            );
-        })
-        .catch(err => {
-          console.log(err);
-          return err;
-        });
+  useEffect(() => {
+    setMyAccessCode(window.location.pathname.split('/').pop());
+    if (
+      window.location.pathname === '/join' ||
+      window.location.pathname === '/add/:code'
+    ) {
+      setMyAccessCode('default');
     }
+
+    async function fetchData() {
+      if (myAccessCode.length === 4 && myAccessCode !== 'default') {
+        const playlistRef = db.doc(`playlists/${myAccessCode}`);
+        await playlistRef
+          .get()
+          .then(async doc => {
+            if (!doc.exists) {
+              return {};
+            }
+            setDocumentOwnerId({ data: doc.data().ownerId });
+            setDocumentPlaylistId({ data: doc.data().playlistId });
+            setDocumentUri({ uri: doc.data().uri });
+            setDocumentPlaylistName({ data: doc.data().playlistName });
+
+            await playlistRef
+              .collection('tracks')
+              .orderBy('votes', 'desc')
+              .onSnapshot(
+                {
+                  // Listen for document metadata changes
+                  includeMetadataChanges: true,
+                },
+                snapDoc => {
+                  const playlistArr = [];
+                  snapDoc.docs.forEach(item => {
+                    playlistArr.push(item.data());
+                  });
+                  setDocumentState(playlistArr);
+                }
+              );
+          })
+          .catch(err => {
+            console.log(err);
+            return err;
+          });
+      }
+    }
+
     fetchData();
   }, [myAccessCode]);
 

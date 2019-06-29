@@ -17,7 +17,7 @@ const CreateContainer = styled(Section)`
 `;
 
 const CreateButton = styled.button`
-  ${mixins.customButton};
+  ${mixins.bigButton};
 `;
 
 const CreateFieldSet = styled.fieldset`
@@ -74,7 +74,6 @@ const Create = () => {
   });
 
   const {
-    myAccessCode,
     setMyAccessCode,
     setDocumentPlaylistId,
     setDocumentOwnerId,

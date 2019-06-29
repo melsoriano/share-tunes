@@ -129,7 +129,7 @@ const ButtonContainer = styled.div`
 `;
 
 const HomepageButton = styled.button`
-  ${mixins.customButton}
+  ${mixins.bigButton}
   cursor: pointer;
 `;
 

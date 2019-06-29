@@ -21,22 +21,6 @@ const mixins = {
     outline: 1px solid red;
   `,
 
-  // link: css`
-  //   display: inline-block;
-  //   text-decoration: none;
-  //   text-decoration-skip-ink: auto;
-  //   color: inherit;
-  //   position: relative;
-  //   transition: ${theme.transition};
-  //   cursor: pointer;
-  //   &:hover,
-  //   &:active,
-  //   &:focus {
-  //     color: ${colors.pink};
-  //     outline: 0;
-  //   }
-  // `,
-
   inlineLink: css`
     display: inline-block;
     text-decoration: none;
@@ -66,18 +50,45 @@ const mixins = {
     }
   `,
 
-  customButton: css`
+  smallButton: css`
+    font-family: ${fonts.RiftSoft};
+    text-align: center;
+    font-size: 12px;
+    font-weight: 500;
+    letter-spacing: 2px;
+    color: ${props => props.theme.colors.buttonFill};
+    background: ${props => props.theme.colors.background};
+    border: 1px solid ${props => props.theme.colors.buttonFill};
+    border-radius: ${theme.borderRadius};
+    padding: 4px;
+    margin: 10px;
+    width: 3rem;
+    line-height: 1;
+    text-decoration: none;
+    cursor: pointer;
+    transition: ${theme.transition};
+    &:hover,
+    &:focus,
+    &:active {
+      background: ${props => props.theme.colors.buttonFill};
+      color: ${props => props.theme.colors.buttonFontColor};
+    }
+    &:after {
+      display: none !important;
+    }
+  `,
+
+  bigButton: css`
     font-family: ${fonts.RiftSoft};
     font-weight: 500;
     letter-spacing: 4px;
-    font-size: ${fontSizes.medium};
     color: ${props => props.theme.colors.buttonFontColor};
     background-color: ${props => props.theme.colors.buttonFill};
     border: 1px solid ${props => props.theme.colors.buttonFill};
     border-radius: ${theme.borderRadius};
     padding: 15px 40px;
     margin: 10px;
-    width: 255px;
+    width: 18rem;
     font-size: ${fontSizes.small};
     line-height: 1;
     text-decoration: none;
