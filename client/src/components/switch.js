@@ -38,24 +38,27 @@ const ToggleSwitch = () => {
             display: 'flex',
             justifyContent: 'center',
             alignItems: 'center',
-            height: '100%',
+            height: '90%',
             paddingRight: 2,
+            paddingTop: 2,
           }}
         >
-          <IconMoon />
+          <IconSun />
         </div>
       }
       checkedIcon={
         <div
           style={{
+            color: 'black',
             display: 'flex',
             justifyContent: 'center',
             alignItems: 'center',
-            height: '100%',
+            height: '90%',
             paddingRight: 2,
+            paddingTop: 2,
           }}
         >
-          <IconSun />
+          <IconMoon />
         </div>
       }
       boxShadow="0px 1px 5px rgba(0, 0, 0, 0.6)"
