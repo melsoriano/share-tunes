@@ -1,18 +1,17 @@
 import React, { useState, useContext, useEffect, Fragment } from 'react';
-import { Link } from '@reach/router';
+import { Link, navigate, Redirect } from '@reach/router';
 import SpotifyPlayer from 'react-spotify-web-playback';
 import axios from 'axios';
 import styled from 'styled-components';
-import { navigate } from '@reach/router/lib/history';
 import { SpotifyContext } from '../context/spotifyContext';
 import { SpotifyApi } from '../api/spotify/spotifyConfig';
 import { reorderTrack } from '../api/spotify/spotifyApi';
 import { db } from '../api/firebase/firebaseConfig';
 import { vote } from '../api/firebase/firebaseApi';
 import { theme, mixins } from '../styles';
+import Player from './player';
 
 import AddSong from './addsong';
-import { navigate } from '@reach/router/lib/history';
 
 const { fonts, fontSizes, colors } = theme;
 
@@ -23,16 +22,11 @@ const TuneRoomContainer = styled.div`
 const PlaylistName = styled.h2`
   text-align: center;
   font-size: ${fontSizes.h2};
+  font-family: ${fonts.RiftSoft};
+  letter-spacing: 4px;
   text-transform: uppercase;
   font-weight: 600;
   color: ${props => props.theme.colors.buttonFill};
-`;
-
-const PlayerContainer = styled.div`
-  svg {
-    width: 25px;
-    height: 25px;
-  }
 `;
 
 const TracksContainer = styled.div`
@@ -44,12 +38,23 @@ const TracksContainer = styled.div`
 `;
 
 const TrackImageContainer = styled.div`
+  display: flex;
+  flex-flow: row nowrap;
   padding: 5px;
+
+  img {
+    margin-right: 10px;
+  }
 `;
 
 const TrackInfoContainer = styled.div`
   display: flex;
   flex-flow: row wrap;
+  justify-content: space-between;
+  width: 100%;
+  .hide-track {
+    display: 'none';
+  }
 `;
 
 const TrackText = styled.p`
@@ -59,17 +64,46 @@ const TrackText = styled.p`
 const VoteContainer = styled.div`
   display: flex;
   flex-flow: column wrap;
+  justify-content: center;
+  align-items: center;
 `;
 
 const VoteText = styled.p`
   font-size: ${fontSizes.xsmall};
 `;
 
-function TuneRoom() {
+const VoteButton = styled.button`
+  ${mixins.smallButton};
+`;
+
+const BackButton = styled.button`
+  color: ${props => props.theme.colors.buttonFill};
+  text-transform: uppercase;
+  border: none;
+  font-family: ${fonts.RiftSoft};
+  letter-spacing: 3px;
+  font-size: ${fontSizes.small};
+  font-weight: 500;
+  background: none;
+  transition: ${theme.transition};
+  cursor: pointer;
+  &:hover,
+  &:focus,
+  &:active {
+    background: ${props => props.theme.colors.buttonFill};
+    color: ${props => props.theme.colors.buttonFontColor};
+  }
+  &:after {
+    display: none !important;
+  }
+`;
+
+function TuneRoom(props) {
   const user = JSON.parse(localStorage.getItem('user'));
   const accessCode = localStorage.getItem('accessCode');
-
-  const [localPlaylistUri, setLocalPlaylistUri] = useState('');
+  const [trackResults, setTrackResults] = useState({ data: '' });
+  const [votedTracks, setVotedTracks] = useState({ results: [] });
+  const [currentTrack, setCurrentTrack] = useState(null);
 
   const {
     documentUri,
@@ -78,49 +112,27 @@ function TuneRoom() {
     documentPlaylistName,
     documentState,
     setDocumentState,
-    myAccessCode,
+    setMyAccessCode,
   } = useContext(SpotifyContext);
 
   useEffect(() => {
     setDocumentState(documentState);
-    setLocalPlaylistUri(documentUri);
-  }, [documentState, documentUri, setDocumentState]);
-
-  const [trackResults, setTrackResults] = useState({
-    data: '',
-  });
-
-  const [votedTracks, setVotedTracks] = useState({ results: [] });
-  const [voteCount, setVoteCount] = useState();
+  }, [currentTrack, documentState, documentUri, setDocumentState]);
 
   useEffect(() => {
     async function getRefreshToken() {
-      try {
-        return await axios.post('/auth/refresh_token', user).then(response => {
-          console.log(response);
-          const { access_token, refresh_token } = response.data;
-
-          SpotifyApi.setAccessToken(access_token);
-          SpotifyApi.setRefreshToken(refresh_token);
-        });
-      } catch (error) {
-        if (error.response) {
-          console.log(error.response);
-          return error.response;
-        }
-        if (error.request) {
-          console.log(error.request);
-          return error.request;
-        }
-        console.log(error.message);
-        return error.message;
-      }
+      await axios
+        .post('/auth/refresh_token', user)
+        .then(response => {
+          SpotifyApi.setAccessToken(response.data.access_token);
+          SpotifyApi.setRefreshToken(response.data.refresh_token);
+        })
+        .catch(error => error);
     }
-
     // getRefreshToken();
     setInterval(() => {
       getRefreshToken();
-    }, 2000000);
+    }, 3000000);
   }, [user]);
 
   useEffect(() => {
@@ -134,17 +146,22 @@ function TuneRoom() {
           JSON.stringify({ uid: doc.id, ...doc.data() })
         );
       });
-    // Reordering tracks when component loads
-    if (documentPlaylistId.data !== '') {
-      // console.log(documentPlaylistId.data);
 
+    if (documentPlaylistId.data !== '') {
       reorderTrack(documentPlaylistId.data, accessCode, documentOwnerId.data);
+      documentState.map((track, i) => {
+        if (currentTrack === track.uri) {
+          document.querySelector(`.track--${i}`).style.display = 'none';
+        }
+      });
     }
   }, [
     accessCode,
+    currentTrack,
     documentOwnerId,
     documentPlaylistId,
     documentState,
+    props,
     user.uid,
   ]);
 
@@ -152,71 +169,61 @@ function TuneRoom() {
     if (!votedTracks.results.includes(trackUri)) {
       vote(trackUri, accessCode, documentPlaylistId);
       setVotedTracks({ results: [...votedTracks.results, trackUri] });
-
-      // let filterVotes = documentState.forEach(item => item.uri === trackUri);
-      // console.log(filterVotes);
-      // setVoteCount(filterVotes);
       reorderTrack(documentPlaylistId.data, accessCode, documentOwnerId.data);
     }
-    // Reordering tracks when someone votes
+  };
+
+  const trackUri = documentState.map(track => track.uri);
+
+  const back = async () => {
+    await setMyAccessCode('default');
+    await navigate('/join').then(window.location.reload());
   };
 
   return (
     <TuneRoomContainer>
-      <Link to="/join">Join Different Tuneroom</Link>
+      <BackButton type="submit" onClick={() => back()}>
+        back
+      </BackButton>
       <PlaylistName>{documentPlaylistName.data}</PlaylistName>
-      <PlayerContainer>
-        <SpotifyPlayer
-          token={user.accessToken}
-          uris={documentState.map(track => track.uri)}
-          autoPlay
-          syncExternalDeviceInterval={1}
-        />
-      </PlayerContainer>
-      {documentState !== '' ? (
+      <Player
+        user={user}
+        trackUri={trackUri}
+        documentState={documentState}
+        setCurrentTrack={setCurrentTrack}
+        currentTrack={currentTrack}
+      />
+      <h2>Up Next:</h2>
+      {documentState.length > 0 &&
         documentState.map((result, i) => {
           return (
             <Fragment>
-              {i === 1 && <h2>Up Next:</h2>}
               <TracksContainer key={i}>
-                <TrackInfoContainer>
+                <TrackInfoContainer className={`track--${i}`}>
                   <TrackImageContainer>
                     <img src={result.album.images[2].url} alt="album-cover" />
+                    <TrackText>
+                      {result.name}
+                      <br />
+                      {result.artists[0].name}
+                    </TrackText>
                   </TrackImageContainer>
-                  <TrackText>
-                    {result.name}
-                    <br />
-                    {result.artists[0].name}
-                  </TrackText>
+
+                  <VoteContainer>
+                    <VoteButton
+                      type="submit"
+                      onClick={() => handleVote(result.uri, documentUri)}
+                    >
+                      vote
+                    </VoteButton>
+                    <VoteText>{result.votes} Votes</VoteText>
+                  </VoteContainer>
                 </TrackInfoContainer>
-                <VoteContainer>
-                  <button
-                    type="submit"
-                    onClick={() => handleVote(result.uri, documentUri)}
-                  >
-                    vote
-                  </button>
-                  <VoteText>{result.votes} Votes</VoteText>
-                </VoteContainer>
               </TracksContainer>
             </Fragment>
           );
-        })
-      ) : (
-        <div>
-          <h2>
-            <Link to="/join">Join a playlist</Link> to see what's playing
-          </h2>
-        </div>
-      )}
+        })}
       <AddSong />
-      &nbsp;
-      {trackResults.data !== '' && (
-        <button type="submit" onClick={() => setTrackResults({ data: '' })}>
-          Close Search
-        </button>
-      )}
-      <br />
     </TuneRoomContainer>
   );
 }

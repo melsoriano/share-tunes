@@ -1,11 +1,7 @@
 import React, { useState, useContext, useEffect } from 'react';
 import { navigate } from '@reach/router';
 import styled from 'styled-components';
-import {
-  searchTracks,
-  addStartingTrack,
-  addTrack,
-} from '../api/spotify/spotifyApi';
+import { searchTracks, addTrack } from '../api/spotify/spotifyApi';
 import { SpotifyApi } from '../api/spotify/spotifyConfig';
 import { SpotifyContext } from '../context/spotifyContext';
 
@@ -21,7 +17,7 @@ const AddContainer = styled.div`
 `;
 
 const SearchButton = styled.button`
-  ${mixins.customButton};
+  ${mixins.bigButton};
 `;
 
 const AddFieldSet = styled.fieldset`
@@ -93,10 +89,7 @@ const ListItem = styled.li`
 `;
 
 const AddButton = styled.button`
-  background: transparent;
-  border: 1px solid ${props => props.theme.colors.buttonFill};
-  border-radius: 255px;
-  color: ${props => props.theme.colors.buttonFill};
+  ${mixins.smallButton};
 `;
 
 const AddSong = props => {
@@ -105,13 +98,14 @@ const AddSong = props => {
   const [trackResults, setTrackResults] = useState({
     data: '',
   });
-  const { path } = props;
+  const { path, code } = props;
 
   const {
     setMyAccessCode,
     setDocumentUri,
     documentOwnerId,
     documentPlaylistId,
+    setDocumentState,
   } = useContext(SpotifyContext);
 
   SpotifyApi.setAccessToken(user.accessToken);
@@ -124,10 +118,11 @@ const AddSong = props => {
   const search = e => {
     setStateQuery({ query: e.target.value });
   };
+  const [initialTracks, setInitialTracks] = useState([]);
+  const accessCodeId = window.location.pathname.split('/').pop();
 
   const handleAddTrack = async result => {
     // need to pass this all the way to addTrackDb method in firebaseApi
-    let accessCodeId = window.location.pathname.split('/').pop();
 
     await addTrack(
       documentOwnerId.data,
@@ -135,9 +130,13 @@ const AddSong = props => {
       accessCodeId,
       result
     );
-    if (!window.location.pathname.includes('tuneroom')) {
-      await navigate(`/tuneroom/${accessCodeId}`);
+    setInitialTracks([result, ...initialTracks]);
+
+    if (accessCodeId === code && initialTracks.length >= 1) {
+      await setDocumentState([result, ...initialTracks]);
+      await navigate(`/tuneroom/${accessCodeId}`, { state: result });
     }
+    setStateQuery({ query: '' });
   };
 
   const handleKeyPress = e => {
@@ -148,8 +147,8 @@ const AddSong = props => {
 
   return (
     <AddContainer>
-      {path === '/add' && (
-        <AddTrackTitle>Add a song to launch your playlist!</AddTrackTitle>
+      {path === `/add/${accessCodeId}` && (
+        <AddTrackTitle>Go ahead and add a couple (2) songs!</AddTrackTitle>
       )}
 
       {/** SEARCH FOR A SONG */}

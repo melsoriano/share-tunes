@@ -1,5 +1,5 @@
 import React, { useState, useContext, useEffect } from 'react';
-import { navigate } from '@reach/router';
+import { navigate, redirectTo } from '@reach/router';
 import styled from 'styled-components';
 import { db } from '../api/firebase/firebaseConfig';
 import { SpotifyApi } from '../api/spotify/spotifyConfig';
@@ -16,7 +16,7 @@ const JoinContainer = styled(Section)`
 `;
 
 const JoinButton = styled.button`
-  ${mixins.customButton};
+  ${mixins.bigButton};
 `;
 
 const JoinFieldSet = styled.fieldset`
@@ -84,15 +84,16 @@ const Join = () => {
     if (user !== null) {
       SpotifyApi.setAccessToken(user.accessToken);
     }
-  }, [user]);
+  }, [myAccessCode, user]);
 
-  const checkPlaylistExists = code => {
-    db.collection('playlists')
+  const checkPlaylistExists = async code => {
+    await db
+      .collection('playlists')
       .get()
       .then(async querySnapshot => {
         let isMatch = false;
         let documentUri = '';
-        querySnapshot.forEach(doc => {
+        await querySnapshot.forEach(doc => {
           if (doc.id === code) {
             isMatch = true;
             documentUri = doc.data().uri;
@@ -104,8 +105,8 @@ const Join = () => {
           await setDocumentUri({ data: documentUri });
           await setMyAccessCode(searchQuery.code);
 
-          await localStorage.setItem('accessCode', searchQuery.code);
-          await navigate(`/tuneroom/${searchQuery.code}`);
+          localStorage.setItem('accessCode', searchQuery.code);
+          navigate(`tuneroom/${searchQuery.code}`);
         } else {
           setFlashMessage(true);
         }

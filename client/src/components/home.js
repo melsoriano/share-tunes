@@ -129,7 +129,7 @@ const ButtonContainer = styled.div`
 `;
 
 const HomepageButton = styled.button`
-  ${mixins.customButton}
+  ${mixins.bigButton}
   cursor: pointer;
 `;
 
@@ -219,8 +219,8 @@ function Home() {
         <ButtonContainer className="__BTN__">
           <HomepageButton
             type="submit"
-            onClick={() => {
-              navigate('/create');
+            onClick={async () => {
+              await navigate('/create');
             }}
           >
             CREATE A PLAYLIST
@@ -228,8 +228,8 @@ function Home() {
 
           <HomepageButton
             type="submit"
-            onClick={() => {
-              navigate('/join');
+            onClick={async () => {
+              await navigate('/join');
             }}
           >
             JOIN A PLAYLIST

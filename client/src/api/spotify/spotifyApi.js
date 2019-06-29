@@ -41,15 +41,15 @@ function createSpotifyPlaylist(
         uri
       );
       // after playlist creation, we need to set this in context to pass throughout the app
-      await setDocumentPlaylistId({ data: playlistId });
-      await setDocumentOwnerId({ data: ownerId });
-      await setDocumentPlaylistName({ data: playlistName });
-      await setDocumentUri({ uri });
+      setDocumentPlaylistId({ data: playlistId });
+      setDocumentOwnerId({ data: ownerId });
+      setDocumentPlaylistName({ data: playlistName });
+      setDocumentUri({ uri });
     })
-    .then(navigate(`/add/${accessCodeId}`))
-    .catch(error => {
-      return error;
-    });
+    .then(async () => {
+      await navigate(`/add/${accessCodeId}`);
+    })
+    .catch(error => error);
 }
 
 function searchTracks(query, setTrackResults) {
@@ -79,10 +79,8 @@ function addTrack(ownerId, playlistId, accessCodeId, track) {
               },
             }
           )
-          .then(response => {
-            if (response.status === 201) {
-              addTrackToDb(track, accessCodeId);
-            }
+          .then(() => {
+            addTrackToDb(track, accessCodeId);
           })
           .catch(error => error);
       }
@@ -102,7 +100,9 @@ function addStartingTrack(track, setMyAccessCode, setDocumentUri, navigate) {
         })
         .then(setMyAccessCode(accessCodeId), setDocumentUri({ uri }))
         .then(() => {
-          SpotifyApi.getPlaylistTracks(playlistId).then(navigate('/tuneroom'));
+          SpotifyApi.getPlaylistTracks(playlistId).then(async () => {
+            await navigate('/tuneroom');
+          });
         })
         .catch(error => {
           return error;
@@ -126,7 +126,6 @@ function reorderTrack(documentPlaylistId, accessCode, ownerId) {
       });
     })
     .then(() => {
-      // Get the playlist owner's id to get token
       db.doc(`users/${ownerId}`)
         .get()
         .then(async doc => {
@@ -145,7 +144,7 @@ function reorderTrack(documentPlaylistId, accessCode, ownerId) {
                 },
               }
             )
-            .catch(error => console.log(error));
+            .catch(error => error);
         });
     });
 }
@@ -157,40 +156,3 @@ export {
   addStartingTrack,
   reorderTrack,
 };
-
-// SpotifyApi.getPlaylistTracks(documentPlaylistId).then(
-//   responseData => {
-//     const trackList = responseData.body.items;
-//     trackList.map((trackData, trackIndex) => {
-//       const { uri } = trackData.track;
-//       // nextTrackIndex` represents where in the Array the ranked tracks should go based on vote count
-//       nextTrackIndex = uriByHighestVotes.indexOf(uri);
-
-//       if (
-//         nextTrackIndex !== -1 &&
-//         documentPlaylistId !== undefined &&
-//         nextTrackIndex !== trackIndex
-//       ) {
-//         axios
-//           .put(
-//             `https://api.spotify.com/v1/playlists/${documentPlaylistId}/tracks`,
-//             {
-//               range_start: trackIndex,
-//               insert_before: nextTrackIndex,
-//             },
-//             {
-//               headers: {
-//                 Authorization: `Bearer ${accessToken}`,
-//                 'Content-Type': 'application/json;charset`UTF-8',
-//               },
-//             }
-//           )
-//           .then(response => {
-//             console.log('res >>', response);
-//             snapshotId.push(response.data);
-//           })
-//           .catch(error => console.log(error));
-//       }
-//     });
-//   }
-// );
