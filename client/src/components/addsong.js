@@ -5,7 +5,7 @@ import { searchTracks, addTrack } from '../api/spotify/spotifyApi';
 import { SpotifyApi } from '../api/spotify/spotifyConfig';
 import { SpotifyContext } from '../context/spotifyContext';
 
-import { theme, mixins } from '../styles';
+import { theme, mixins, media } from '../styles';
 
 const { fontSizes } = theme;
 
@@ -32,7 +32,7 @@ const AddInputField = styled.input`
   background: transparent;
   color: ${props => props.theme.colors.fontColor};
   box-sizing: border-box;
-  width: 280px;
+  width: 100%;
   padding: 12px;
   margin-bottom: 20px;
   border: none;
@@ -44,6 +44,7 @@ const AddInputField = styled.input`
   outline: none;
   cursor: text;
   transition: all 300ms ease;
+
   &:focus {
     border-bottom: 1px solid ${props => props.theme.colors.buttonFill};
     box-shadow: 0 1px 0 0 ${props => props.theme.colors.buttonFill};

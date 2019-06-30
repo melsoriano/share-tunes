@@ -87,13 +87,14 @@ const mixins = {
     border: 1px solid ${props => props.theme.colors.buttonFill};
     border-radius: ${theme.borderRadius};
     padding: 15px 40px;
-    margin: 10px;
-    width: 18rem;
+    margin: 10px 0;
+    width: 50%;
     font-size: ${fontSizes.small};
     line-height: 1;
     text-decoration: none;
     cursor: pointer;
     transition: ${theme.transition};
+    ${media.phablet`width:100%;`};
     &:hover,
     &:focus,
     &:active {
