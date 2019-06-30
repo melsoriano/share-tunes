@@ -8,7 +8,7 @@ import { SpotifyApi } from '../api/spotify/spotifyConfig';
 import { reorderTrack } from '../api/spotify/spotifyApi';
 import { db } from '../api/firebase/firebaseConfig';
 import { vote } from '../api/firebase/firebaseApi';
-import { theme, mixins } from '../styles';
+import { theme, mixins, media } from '../styles';
 import Player from './player';
 
 import AddSong from './addsong';
@@ -17,6 +17,9 @@ const { fonts, fontSizes, colors } = theme;
 
 const TuneRoomContainer = styled.div`
   ${mixins.sidePadding};
+  display: flex;
+  flex-flow: column wrap;
+  ${media.phablet`padding: 2px;`};
 `;
 
 const PlaylistName = styled.h2`
@@ -27,13 +30,14 @@ const PlaylistName = styled.h2`
   text-transform: uppercase;
   font-weight: 600;
   color: ${props => props.theme.colors.buttonFill};
+  margin-top: 50px;
 `;
 
 const TracksContainer = styled.div`
   display: flex;
   flex-flow: row wrap;
   justify-content: space-between;
-  align-items: center;
+  /* align-items: center; */
   text-align: left;
 `;
 
@@ -44,6 +48,7 @@ const TrackImageContainer = styled.div`
 
   img {
     margin-right: 10px;
+    ${media.phablet`width: 50px;height: 50px;`};
   }
 `;
 
@@ -59,6 +64,7 @@ const TrackInfoContainer = styled.div`
 
 const TrackText = styled.p`
   text-align: left;
+  ${media.phablet`font-size:${fontSizes.xsmall};`};
 `;
 
 const VoteContainer = styled.div`
@@ -86,16 +92,27 @@ const BackButton = styled.button`
   font-weight: 500;
   background: none;
   transition: ${theme.transition};
+  border-radius: 225px;
+  padding: 5px 10px;
   cursor: pointer;
   &:hover,
   &:focus,
   &:active {
     background: ${props => props.theme.colors.buttonFill};
     color: ${props => props.theme.colors.buttonFontColor};
+    border-radius: 225px;
   }
   &:after {
     display: none !important;
   }
+`;
+
+const UpNextHeader = styled.h2`
+  font-family: ${fonts.RiftSoft};
+  font-weight: 600;
+  letter-spacing: 2px;
+  margin: 0;
+  padding: 0;
 `;
 
 function TuneRoom(props) {
@@ -181,50 +198,50 @@ function TuneRoom(props) {
   };
 
   return (
-    <TuneRoomContainer>
+    <>
       <BackButton type="submit" onClick={() => back()}>
         back
       </BackButton>
-      <PlaylistName>{documentPlaylistName.data}</PlaylistName>
-      <Player
-        user={user}
-        trackUri={trackUri}
-        documentState={documentState}
-        setCurrentTrack={setCurrentTrack}
-        currentTrack={currentTrack}
-      />
-      <h2>Up Next:</h2>
-      {documentState.length > 0 &&
-        documentState.map((result, i) => {
-          return (
-            <Fragment>
-              <TracksContainer key={i}>
-                <TrackInfoContainer className={`track--${i}`}>
-                  <TrackImageContainer>
-                    <img src={result.album.images[2].url} alt="album-cover" />
-                    <TrackText>
-                      {result.name}
-                      <br />
-                      {result.artists[0].name}
-                    </TrackText>
-                  </TrackImageContainer>
+      <TuneRoomContainer>
+        <PlaylistName>{documentPlaylistName.data}</PlaylistName>
+        <Player
+          user={user}
+          trackUri={trackUri}
+          setCurrentTrack={setCurrentTrack}
+        />
+        <UpNextHeader>Up Next:</UpNextHeader>
+        {documentState.length > 0 &&
+          documentState.map((result, i) => {
+            return (
+              <Fragment>
+                <TracksContainer key={i}>
+                  <TrackInfoContainer className={`track--${i}`}>
+                    <TrackImageContainer>
+                      <img src={result.album.images[2].url} alt="album-cover" />
+                      <TrackText>
+                        {result.name}
+                        <br />
+                        {result.artists[0].name}
+                      </TrackText>
+                    </TrackImageContainer>
 
-                  <VoteContainer>
-                    <VoteButton
-                      type="submit"
-                      onClick={() => handleVote(result.uri, documentUri)}
-                    >
-                      vote
-                    </VoteButton>
-                    <VoteText>{result.votes} Votes</VoteText>
-                  </VoteContainer>
-                </TrackInfoContainer>
-              </TracksContainer>
-            </Fragment>
-          );
-        })}
-      <AddSong />
-    </TuneRoomContainer>
+                    <VoteContainer>
+                      <VoteButton
+                        type="submit"
+                        onClick={() => handleVote(result.uri, documentUri)}
+                      >
+                        vote
+                      </VoteButton>
+                      <VoteText>{result.votes} Votes</VoteText>
+                    </VoteContainer>
+                  </TrackInfoContainer>
+                </TracksContainer>
+              </Fragment>
+            );
+          })}
+        <AddSong />
+      </TuneRoomContainer>
+    </>
   );
 }
 
