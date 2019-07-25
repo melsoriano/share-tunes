@@ -160,7 +160,7 @@ function Home() {
     function getToken() {
       if (spotifyAuthCode) {
         axios.post('/auth/token', { spotifyAuthCode }).then(async response => {
-          FirebaseAuth.setPersistence('local').then(async () => {
+          FirebaseAuth.setPersistence('session').then(async () => {
             await FirebaseAuth.signInWithCustomToken(
               response.data.firebaseToken
             )
